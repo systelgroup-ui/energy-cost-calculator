@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Systel Energy Cost Calculator</title>
+
+<style>
+
+/* ------------------ THEME COLORS ------------------ */
+:root {
+    --green: #9dd3af;
+    --grey: #737373;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: var(--green);
+    padding: 25px;
+    font-weight: 600;
+}
+
+/* ------------------ MAIN BOX ------------------ */
+.calculator {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 14px;
+    max-width: 950px;
+    margin: auto;
+    border: 4px solid var(--green);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+
+h2 {
+    text-align: center;
+    color: var(--grey);
+    margin-bottom: 12px;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+/* ------------------ COMPRESSOR BOX ------------------ */
+.compressor-box {
+    border: 2px solid var(--grey);
+    padding: 20px;
+    background: #ffffff;
+    margin-bottom: 18px;
+    border-radius: 10px;
+}
+
+.compressor-title {
+    color: var(--grey);
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* ------------------ LABELS + INPUTS ------------------ */
+label {
+    font-weight: bold;
+    color: var(--grey);
+    display: block;
+}
+
+.eg-text {
+    font-size: 13px;
+    color: var(--grey);
+    margin-bottom: 5px;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 4px;
+    border: 2px solid var(--green);
+    border-radius: 6px;
+    background: #f8fff8;
+    font-weight: 600;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 15px;
+}
+
+/* ------------------ MODE BUTTONS ------------------ */
+.mode-toggle {
+    display: flex;
+    margin: 10px 0 15px 0;
+}
+
+.mode-toggle button {
+    padding: 10px 20px;
+    margin-right: 10px;
+    border: 2px solid var(--grey);
+    border-radius: 6px;
+    background: var(--grey);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.mode-toggle .active {
+    background: var(--green);
+    color: black;
+    border-color: var(--green);
+}
+
+/* ------------------ BUTTONS ------------------ */
+.btn {
+    padding: 12px 20px;
+    background: var(--grey);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 6px 0;
+}
+
+.btn-green { background: var(--green); color: black; }
+.btn-remove { background: #a93434; }
+
+/* ------------------ RESULTS ------------------ */
+.results {
+    background: #e7f6ec;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 25px;
+    border: 2px solid var(--grey);
+    display: none;
+}
+
+.result-item {
+    margin-bottom: 12px;
+    font-size: 18px;
+    color: var(--grey);
+    font-weight: bold;
+}
+.results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-top: 10px;
+}
+
+
+.highlight {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--grey);
+    margin-top: 10px;
+}
+
+.cta-btn {
+    margin-top: 18px;
+    padding: 14px;
+    background: var(--green);
+    color: black;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+    border: 2px solid var(--grey);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="calculator">
+    <h2>Essential Compressed Air Tools Offered by Systel</h2>
+    <h2>Energy Cost Calculator</h2>
+
+    <!-- COMPRESSOR AREA -->
+    <div id="compressorContainer"></div>
+
+    <button class="btn-green btn" onclick="addCompressor()">+ Add Compressor</button>
+    <button class="btn-green btn" style="width:100%; font-size:20px;" onclick="calculateTotal()">Calculate Total Energy Cost</button>
+
+    <!-- RESULTS SECTION -->
+    <div id="results" class="results">
+    <h2>RESULT</h2>
+
+    <div class="results-grid">
+        <div>
+            <div class="result-item" id="rHoursYear"></div>
+            <div class="result-item" id="rEffectivePower"></div>
+            <div class="result-item" id="rAnnualEnergy"></div>
+            <div class="result-item" id="rCostPerDay"></div>
+        </div>
+
+        <div>
+            <div class="highlight" id="rAnnualCost"></div>
+            <div class="highlight" id="rCostPerHour"></div>
+        </div>
+    </div>
+
+    <div class="cta-btn" onclick="showContacts()">💰 Want to reduce your compressor energy cost? Click here!</div>
+
+    <div id="contacts" style="display:none; margin-top:10px;">
+        <div class="cta-btn" onclick="window.location.href='tel:9843145445'">📞 Call Systel Energy Solutions</div>
+        <div class="cta-btn" onclick="window.location.href='mailto:support@systel.asia'">✉️ Email: support@systel.asia</div>
+    </div>
+</div>
+
+    </div>
+</div>
+
+<script>
+
+let compressorCount = 0;
+
+/* ------------------ ADD COMPRESSOR ------------------ */
+function addCompressor() {
+    compressorCount++;
+
+    let div = document.createElement("div");
+    div.className = "compressor-box";
+    div.id = "comp-" + compressorCount;
+
+    div.innerHTML = `
+        <div class="compressor-title">Compressor ${compressorCount}</div>
+
+        <!-- MODE BUTTONS -->
+        <div class="mode-toggle">
+            <button class="mode-btn" onclick="selectMode(this,'fixed')">Fixed Load Mode</button>
+            <button class="mode-btn" onclick="selectMode(this,'unload')">Load / Unload Mode</button>
+        </div>
+
+        <div class="grid">
+
+            <div>
+                <label>Motor Power</label>
+                <div class="eg-text">e.g., 75</div>
+                <input type="number" class="motorPower">
+            </div>
+
+            <div>
+                <label>Power Unit</label>
+                <div class="eg-text">kW / HP</div>
+                <select class="powerUnit">
+                    <option value="kW">kW</option>
+                    <option value="HP">HP</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Hours per Day</label>
+                <div class="eg-text">e.g., 24</div>
+                <input type="number" class="hoursPerDay">
+            </div>
+
+            <div>
+    		<label>Days per Year</label>
+    		<div class="eg-text">e.g., 365</div>
+    		<input type="number" class="daysPerYear">
+	    </div>
+
+
+
+            <div>
+                <label>Electricity Tariff (₹/kWh)</label>
+                <div class="eg-text">e.g., 8.5</div>
+                <input type="number" class="tariff">
+            </div>
+
+        </div>
+
+        <!-- FIXED MODE INPUT -->
+        <div class="fixedMode" style="display:none;">
+            <label>Average Load Factor (%)</label>
+            <div class="eg-text">e.g., 70</div>
+            <input type="number" class="avgLoadFactor">
+        </div>
+
+        <!-- LOAD / UNLOAD MODE -->
+        <div class="unloadMode" style="display:none;">
+            <label>Load Hours per Day</label>
+            <div class="eg-text">e.g., 16</div>
+            <input type="number" class="loadHours">
+
+            <label>Unload Hours per Day</label>
+            <div class="eg-text">e.g., 8</div>
+            <input type="number" class="unloadHours">
+
+            <label>Unload Power (%)</label>
+            <div class="eg-text">e.g., 20–30%</div>
+            <input type="number" class="unloadPowerPercent">
+        </div>
+
+        <button class="btn btn-remove" onclick="removeCompressor('${div.id}')">Remove Compressor</button>
+    `;
+
+    document.getElementById("compressorContainer").appendChild(div);
+}
+
+/* ------------------ REMOVE ------------------ */
+function removeCompressor(id) {
+    document.getElementById(id).remove();
+}
+
+/* ------------------ MODE TOGGLE ------------------ */
+function selectMode(btn, mode) {
+    let box = btn.closest(".compressor-box");
+    box.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    box.querySelector(".fixedMode").style.display = "none";
+    box.querySelector(".unloadMode").style.display = "none";
+
+    if (mode === "fixed") {
+        box.querySelector(".fixedMode").style.display = "block";
+    } else {
+        box.querySelector(".unloadMode").style.display = "block";
+    }
+}
+
+/* ------------------ CONTACTS ------------------ */
+function showContacts() {
+    document.getElementById("contacts").style.display = "block";
+}
+
+/* ------------------ CALCULATE ------------------ */
+function calculateTotal() {
+    let comps = document.querySelectorAll(".compressor-box");
+    if (comps.length === 0) { alert("Add at least one compressor!"); return; }
+
+    let totalPower = 0, totalEnergy = 0, totalCost = 0, totalHoursYear = 0;
+
+    for (let c of comps) {
+
+        let P = parseFloat(c.querySelector(".motorPower").value);
+        let unit = c.querySelector(".powerUnit").value;
+        let hpd = parseFloat(c.querySelector(".hoursPerDay").value);
+        let dpy = parseFloat(c.querySelector(".daysPerYear").value);
+        let tariff = parseFloat(c.querySelector(".tariff").value);
+
+        let PkW = unit === "HP" ? P * 0.746 : P;
+        let Hyear = hpd * dpy;
+        totalHoursYear = Hyear;
+
+        let modeFixed = c.querySelector(".mode-btn.active")?.innerText.includes("Fixed");
+
+        let Peff = 0, Eyear = 0;
+
+        if (modeFixed) {
+            let LF = parseFloat(c.querySelector(".avgLoadFactor").value) / 100;
+            Peff = PkW * LF;
+            Eyear = Peff * Hyear;
+        } else {
+            let loadH = parseFloat(c.querySelector(".loadHours").value);
+            let unloadH = parseFloat(c.querySelector(".unloadHours").value);
+            let UF = parseFloat(c.querySelector(".unloadPowerPercent").value) / 100;
+
+            let Hload = loadH * dpy;
+            let Hunload = unloadH * dpy;
+
+            Eyear = (PkW * Hload) + (PkW * UF * Hunload);
+            Peff = Eyear / (Hload + Hunload);
+        }
+
+        totalPower += Peff;
+        totalEnergy += Eyear;
+        totalCost += Eyear * tariff;
+    }
+
+   	 document.getElementById("results").style.display = "block";
+
+    	document.getElementById("rHoursYear").innerHTML =
+    	`Operating Hours per Year: ${Math.round(totalHoursYear).toLocaleString()} hours`;
+
+     	document.getElementById("rEffectivePower").innerHTML =
+    	`Estimate Average Power/day: ${Math.round(totalPower)} kW`;
+
+	document.getElementById("rAnnualEnergy").innerHTML =
+    	`Annual Energy Consumption: ${Math.round(totalEnergy).toLocaleString()} kWh`;
+
+	document.getElementById("rCostPerDay").innerHTML =
+        `Daily Running Cost: ₹ ${Math.round(totalCost / 365).toLocaleString()}`;
+
+	document.getElementById("rAnnualCost").innerHTML =
+        `Annual Electricity Cost: ₹ ${Math.round(totalCost).toLocaleString()}`;
+
+	document.getElementById("rCostPerHour").innerHTML =
+    	`Cost per Hour: ₹ ${Math.round(totalCost / totalHoursYear).toLocaleString()}`;
+
+   
+}
+
+// AUTO ADD 1 COMPRESSOR
+addCompressor();
+
+</script>
+
+</body>
+</html>
