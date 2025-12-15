@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GHG Emissions Calculator</title>
+
+<style>
+:root{--green:#9dd3af;--grey:#737373}
+body{font-family:Arial;background:var(--green);padding:25px}
+.calculator{background:#fff;max-width:950px;margin:auto;padding:25px;border-radius:12px;border:3px solid var(--green)}
+h2{text-align:center;color:var(--grey)}
+label{font-weight:bold;color:var(--grey)}
+input,select{width:100%;padding:8px;margin:5px 0 12px;border:2px solid var(--green);border-radius:6px}
+input[disabled]{background:#f2f2f2;color:#555}
+button{padding:8px 12px;font-weight:bold;border-radius:6px;cursor:pointer}
+.btn-green{background:var(--green);border:2px solid var(--grey)}
+.btn-remove{background:#a93434;color:#fff;border:none}
+.mode-toggle button{margin-right:6px;background:var(--grey);color:#fff;border:2px solid var(--grey)}
+.mode-toggle .active{background:var(--green);color:black}
+.compressor-box{border:2px solid var(--grey);padding:15px;border-radius:10px;margin-bottom:15px}
+.energy-box{background:#e7f6ec;padding:10px;border-radius:8px;font-weight:bold;color:var(--grey)}
+.results{background:#e7f6ec;padding:15px;border-radius:10px;margin-top:15px;display:none}
+.footer-box{border-top:2px dashed var(--green);margin-top:20px;padding-top:15px}
+</style>
+</head>
+
+<body>
+
+<div class="calculator">
+<h2>Essential Compressed Air Tools Offered by Systel</h2>
+<h2>GHG Emissions Calculator</h2>
+
+<div id="compressorContainer"></div>
+
+<button class="btn-green" onclick="addCompressor()">+ Add Compressor</button>
+<br><br>
+
+<div class="footer-box">
+  <label>Total Annual Energy Consumption (kWh / year)</label>
+  <input type="number" id="totalEnergy" disabled>
+
+  <label>Grid Emission Factor (kg CO₂ / kWh)</label>
+  <input type="number" id="ef" value="0.82" step="0.01" disabled>
+
+  <button class="btn-green" style="width:100%;margin-top:10px" onclick="calculateGHG()">Calculate GHG Emissions</button>
+</div>
+
+<div class="results" id="results">
+  <div id="kgCO2"></div>
+  <div id="tonCO2"></div>
+</div>
+
+</div>
+
+<script>
+let idx=0;
+
+function addCompressor(){
+  idx++;
+  const d=document.createElement("div");
+  d.className="compressor-box";
+  d.innerHTML=`
+  <h3>Compressor ${idx}</h3>
+
+  <div class="mode-toggle">
+    <button onclick="setMode(this,'fixed')">Fixed Load</button>
+    <button onclick="setMode(this,'unload')">Load / Unload</button>
+    <label>Click any 1 field to to get the result (Mandatory Selection)</label>
+  </div>
+
+  <label>Motor Power</label>
+  <input type="number" class="power" oninput="updateAll()">
+
+  <label>Power Unit</label>
+  <select class="unit" onchange="updateAll()">
+    <option value="kW">kW</option>
+    <option value="HP">HP</option>
+  </select>
+
+  <label>Hours per Day</label>
+  <input type="number" class="hpd" oninput="updateAll()">
+
+  <label>Days per Year</label>
+  <input type="number" class="dpy" oninput="updateAll()">
+
+  <div class="fixed" style="display:none">
+    <label>Average Load Factor (%)</label>
+    <input type="number" class="lf" oninput="updateAll()">
+  </div>
+
+  <div class="unload" style="display:none">
+    <label>Load Hours / Day</label>
+    <input type="number" class="lh" oninput="updateAll()">
+    <label>Unload Hours / Day</label>
+    <input type="number" class="uh" oninput="updateAll()">
+    <label>Unload Power (%)</label>
+    <input type="number" class="up" oninput="updateAll()">
+  </div>
+
+  <div class="energy-box">
+    Annual Energy Consumption: <span class="energy">0</span> kWh/year
+  </div>
+
+  <button class="btn-remove" onclick="this.parentElement.remove();updateAll()">Remove</button>
+  `;
+  document.getElementById("compressorContainer").appendChild(d);
+}
+
+function setMode(btn,mode){
+  const box=btn.closest(".compressor-box");
+  box.querySelectorAll(".mode-toggle button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  box.querySelector(".fixed").style.display=mode==="fixed"?"block":"none";
+  box.querySelector(".unload").style.display=mode==="unload"?"block":"none";
+  updateAll();
+}
+
+function updateAll(){
+  let total=0;
+
+  document.querySelectorAll(".compressor-box").forEach(c=>{
+    const P=parseFloat(c.querySelector(".power").value)||0;
+    const hpd=parseFloat(c.querySelector(".hpd").value)||0;
+    const dpy=parseFloat(c.querySelector(".dpy").value)||0;
+    const unit=c.querySelector(".unit").value;
+    if(!P||!hpd||!dpy){c.querySelector(".energy").innerText=0;return;}
+
+    const PkW=unit==="HP"?P*0.746:P;
+    let E=0;
+
+    if(c.querySelector(".fixed").style.display==="block"){
+      const lf=(parseFloat(c.querySelector(".lf").value)||0)/100;
+      E=PkW*lf*hpd*dpy;
+    }else if(c.querySelector(".unload").style.display==="block"){
+      const lh=parseFloat(c.querySelector(".lh").value)||0;
+      const uh=parseFloat(c.querySelector(".uh").value)||0;
+      const up=(parseFloat(c.querySelector(".up").value)||0)/100;
+      E=(PkW*lh*dpy)+(PkW*up*uh*dpy);
+    }
+
+    c.querySelector(".energy").innerText=Math.round(E).toLocaleString();
+    total+=E;
+  });
+
+  document.getElementById("totalEnergy").value=Math.round(total);
+}
+
+function calculateGHG(){
+  const E=parseFloat(document.getElementById("totalEnergy").value)||0;
+  const EF=parseFloat(document.getElementById("ef").value)||0;
+  if(!E||!EF){alert("Check inputs");return;}
+
+  document.getElementById("kgCO2").innerHTML=
+    `Emissions: ${(E*EF).toLocaleString()} kg CO₂ / year`;
+  document.getElementById("tonCO2").innerHTML=
+    `Emissions: ${(E*EF/1000).toFixed(2)} tonnes CO₂ / year`;
+  document.getElementById("results").style.display="block";
+}
+
+addCompressor();
+</script>
+
+</body>
+</html>
