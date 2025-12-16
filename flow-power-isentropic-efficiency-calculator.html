@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="google" content="notranslate">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flow, Pressure & Power Conversion Hub</title>
+
+<style>
+:root{
+  --green:#9dd3af;
+  --grey:#4b5563;
+  --white:#ffffff;
+}
+body{
+  font-family:Arial, Helvetica, sans-serif;
+  background:var(--green);
+  margin:0;
+  padding:20px;
+}
+.container{
+  max-width:1100px;
+  margin:auto;
+  background:#fff;
+  padding:24px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.1);
+}
+h1{
+  text-align:center;
+  color:var(--grey);
+  margin-bottom:24px;
+}
+.card{
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:18px;
+  margin-bottom:20px;
+  background:#f9fafb;
+}
+.card h3{
+  margin-top:0;
+  color:var(--grey);
+}
+.row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px;
+}
+label{
+  font-size:14px;
+  color:#333;
+}
+input, select, button{
+  width:100%;
+  padding:8px 10px;
+  border-radius:6px;
+  border:1px solid #d1d5db;
+  font-size:14px;
+}
+input[readonly]{
+  background:#e5e7eb;
+  cursor:not-allowed;
+}
+button{
+  background:#16a34a;
+  color:#fff;
+  border:none;
+  cursor:pointer;
+}
+button:hover{background:#15803d;}
+.result{
+  font-weight:600;
+  margin-top:8px;
+}
+</style>
+</head>
+
+<body translate="no">
+<div class="container">
+
+<h1>Essential Compressed Air Tools Offered by Systel</h1>
+<h1>Flow Pressure & Power Conversion Hub</h1>
+
+<!-- ================= FLOW CONVERTER ================= -->
+<div class="card">
+<h3>A. Flow Converter</h3>
+
+<div class="row">
+  <div>
+    <label>Enter Flow</label>
+    <input type="number" id="flowInput">
+  </div>
+  <div>
+    <label>Unit</label>
+    <select id="flowUnit">
+      <option value="cfm">CFM</option>
+      <option value="m3h">m³/h</option>
+      <option value="m3m">m³/min</option>
+      <option value="lmin">L/min</option>
+    </select>
+  </div>
+</div>
+
+<div class="row" style="margin-top:14px;">
+  <div><label>CFM</label><input id="outCFM" readonly></div>
+  <div><label>m³/h</label><input id="outM3H" readonly></div>
+  <div><label>m³/min</label><input id="outM3M" readonly></div>
+  <div><label>L/min</label><input id="outLMIN" readonly></div>
+</div>
+</div>
+
+<!-- ================= PRESSURE ================= -->
+<div class="card">
+<h3>B. Pressure Converter</h3>
+
+<div class="row">
+  <div><label>Enter Pressure</label><input type="number" id="pressureInput"></div>
+  <div>
+    <label>Unit</label>
+    <select id="pressureUnit">
+      <option value="bar">bar</option>
+      <option value="psi">psi</option>
+      <option value="kgcm2">kg/cm²</option>
+      <option value="kpa">kPa</option>
+    </select>
+  </div>
+</div>
+
+<div class="row" style="margin-top:14px;">
+  <div><label>bar</label><input id="outBar" readonly></div>
+  <div><label>psi</label><input id="outPsi" readonly></div>
+  <div><label>kg/cm²</label><input id="outKg" readonly></div>
+  <div><label>kPa</label><input id="outKpa" readonly></div>
+</div>
+</div>
+
+<!-- ================= POWER ================= -->
+<div class="card">
+<h3>C. Power Converter</h3>
+<div class="row">
+  <div><label>kW</label><input type="number" id="kw"></div>
+  <div><label>HP</label><input type="number" id="hp"></div>
+</div>
+</div>
+
+<!-- ================= SPECIFIC POWER ================= -->
+<div class="card">
+<h3>D. Specific Power Calculator</h3>
+<div class="row">
+  <div><label>Power (kW)</label><input type="number" id="sp_kw"></div>
+  <div><label>Flow (CFM)</label><input type="number" id="sp_flow"></div>
+</div>
+<button style="margin-top:10px;" onclick="calcSP()">Calculate</button>
+<div class="result" id="sp_result"></div>
+</div>
+
+<!-- ================= SCFM / ACFM ================= -->
+<div class="card">
+<h3>E. SCFM / ACFM Converter</h3>
+
+<div class="row">
+  <div><label>SCFM</label><input type="number" id="scfm"></div>
+  <div><label>Actual Atmospheric Pressure (bar)</label><input type="number" id="p_act"></div>
+  <div><label>Actual Temperature (°C)</label><input type="number" id="t_act"></div>
+  <div><label>Standard Pressure (bar)</label><input type="number" id="p_std" value="1.013" readonly></div>
+  <div><label>Standard Temperature (°C)</label><input type="number" id="t_std" value="20" readonly></div>
+</div>
+
+<button style="margin-top:10px;" onclick="calcACFM()">Calculate ACFM</button>
+<div class="result" id="acfm_result"></div>
+</div>
+
+<!-- ================= ISENTROPIC ================= -->
+<div class="card">
+<h3>F. Isentropic Efficiency Calculator</h3>
+
+<div class="row">
+  <div><label>SSCFM</label><input type="number" id="sscfm"></div>
+  <div><label>Inlet Pressure (bar abs)</label><input type="number" id="p1"></div>
+  <div><label>Discharge Pressure (bar abs)</label><input type="number" id="p2"></div>
+  <div><label>Inlet Temperature (°C)</label><input type="number" id="t1"></div>
+  <div><label>Actual Power (kW)</label><input type="number" id="p_actual"></div>
+</div>
+
+<button style="margin-top:10px;" onclick="calcIsentropic()">Calculate</button>
+<div class="result" id="isentropic_result"></div>
+</div>
+
+</div>
+
+<script>
+/* FLOW */
+function convertFlow(){
+  const v=parseFloat(flowInput.value);
+  if(isNaN(v)) return;
+  let cfm,m3h,m3m,lmin;
+
+  if(flowUnit.value==="cfm"){cfm=v;m3h=cfm*1.699;}
+  if(flowUnit.value==="m3h"){m3h=v;cfm=m3h*0.5886;}
+  if(flowUnit.value==="m3m"){m3m=v;m3h=m3m*60;cfm=m3h*0.5886;}
+  if(flowUnit.value==="lmin"){lmin=v;m3h=lmin/16.667;cfm=m3h*0.5886;}
+
+  m3m=m3h/60;
+  lmin=m3m*1000;
+
+  outCFM.value=cfm.toFixed(2);
+  outM3H.value=m3h.toFixed(2);
+  outM3M.value=m3m.toFixed(3);
+  outLMIN.value=lmin.toFixed(1);
+}
+flowInput.oninput=convertFlow;
+flowUnit.onchange=convertFlow;
+
+/* PRESSURE */
+function convertPressure(){
+  const v=parseFloat(pressureInput.value);
+  if(isNaN(v)) return;
+  let bar;
+  if(pressureUnit.value==="bar") bar=v;
+  if(pressureUnit.value==="psi") bar=v/14.5038;
+  if(pressureUnit.value==="kgcm2") bar=v/1.0197;
+  if(pressureUnit.value==="kpa") bar=v/100;
+
+  outBar.value=bar.toFixed(3);
+  outPsi.value=(bar*14.5038).toFixed(2);
+  outKg.value=(bar*1.0197).toFixed(3);
+  outKpa.value=(bar*100).toFixed(1);
+}
+pressureInput.oninput=convertPressure;
+pressureUnit.onchange=convertPressure;
+
+/* POWER */
+kw.oninput=()=>hp.value=(kw.value*1.341).toFixed(2);
+hp.oninput=()=>kw.value=(hp.value*0.746).toFixed(2);
+
+/* SPECIFIC POWER */
+function calcSP(){
+  const sp=sp_kw.value/sp_flow.value;
+  sp_result.innerText="Specific Power = "+sp.toFixed(3)+" kW/CFM";
+}
+
+/* SCFM → ACFM */
+function calcACFM(){
+  const ACFM=scfm.value*(p_std.value/p_act.value)*
+    ((+t_act.value+273.15)/(+t_std.value+273.15));
+  acfm_result.innerText="ACFM = "+ACFM.toFixed(2);
+}
+
+/* ISENTROPIC */
+function calcIsentropic(){
+  const k=1.4;
+  const T1K=+t1.value+273.15;
+  const ACFM=sscfm.value*(1.013/p1.value)*(T1K/288.15);
+  const Q=ACFM*(0.0283168466/60);
+  const Pis=(k/(k-1))*p1.value*100000*Q*
+    (Math.pow(p2.value/p1.value,(k-1)/k)-1)/1000;
+  const eta=Pis/p_actual.value*100;
+
+  isentropic_result.innerHTML=
+    "Inlet ACFM: "+ACFM.toFixed(2)+"<br>"+
+    "Isentropic Power: "+Pis.toFixed(2)+" kW<br>"+
+    "Isentropic Efficiency: "+eta.toFixed(1)+" %";
+}
+</script>
+
+</body>
+</html>
