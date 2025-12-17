@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dew Point & Condensation Explainer</title>
+
+<style>
+:root{
+  --green:#9dd3af;
+  --dark:#374151;
+  --card:#ffffff;
+}
+body{
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--green);
+  margin:0;
+  padding:30px;
+}
+.container{
+  max-width:900px;
+  margin:auto;
+}
+.card{
+  background:var(--card);
+  border-radius:14px;
+  padding:24px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.12);
+}
+h1{
+  color:var(--dark);
+  margin-bottom:10px;
+  text-align:center;
+}
+p.sub{
+  color:#555;
+  margin-bottom:25px;
+  text-align:center;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:18px;
+}
+label{
+  font-size:14px;
+  font-weight:600;
+  display:block;
+}
+input, select{
+  width:100%;
+  padding:8px;
+  margin-top:6px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+button{
+  display:block;
+  margin:25px auto 0;
+  background:#16a34a;
+  color:white;
+  border:none;
+  padding:12px 22px;
+  font-size:16px;
+  border-radius:8px;
+  cursor:pointer;
+}
+button:hover{
+  background:#15803d;
+}
+.result{
+  margin-top:25px;
+  padding:18px;
+  border-radius:10px;
+  background:#f3f4f6;
+}
+.result h3{
+  margin-top:0;
+}
+.note{
+  margin-top:15px;
+  font-size:13px;
+  color:#555;
+  text-align:center;
+}
+.highlight{
+  font-weight:bold;
+  color:#111827;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <div class="card">
+
+    <h1>Essential Compressed Air Tools Offered by Systel</h1>
+    <h1>Dew Point & Condensation Explainer</h1>
+
+    <p class="sub">
+      Visualise how much water exists in compressed air before drying and how much is removed by the dryer.
+    </p>
+
+    <div class="grid">
+      <div>
+        <label>Inlet Air Temperature (°C)</label>
+        <input id="tin" type="number" step="0.1">
+      </div>
+
+      <div>
+        <label>Relative Humidity at Inlet (%)</label>
+        <input id="rh" type="number" step="1">
+      </div>
+
+      <div>
+        <label>Operating Pressure (bar)</label>
+        <input id="pressure" type="number" step="0.1">
+      </div>
+
+      <div>
+        <label>Dryer Outlet Pressure Dew Point (PDP)</label>
+        <input id="tdew" type="number" step="0.1">
+      </div>
+
+      <div>
+        <label>Air Flow</label>
+        <input id="flow" type="number" step="0.1">
+        <select id="flowUnit">
+          <option value="m3min">m³/min</option>
+          <option value="m3hr">m³/hr</option>
+          <option value="cfm">CFM</option>
+        </select>
+      </div>
+    </div>
+
+    <button onclick="calculate()">Calculate Moisture Removal</button>
+
+    <div id="output" class="result" style="display:none;"></div>
+
+    <div class="note">
+      Simplified engineering estimate using free air (FAD) basis.For critical applications, use detailed psychrometric design.
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Approximate saturation water content table (g/m³)
+const saturationTable = [
+  { T: 10, W: 9.4 },
+  { T: 15, W: 12.8 },
+  { T: 20, W: 17.3 },
+  { T: 25, W: 23.0 },
+  { T: 30, W: 30.4 },
+  { T: 35, W: 39.6 },
+  { T: 40, W: 51.1 },
+  { T: 45, W: 65.2 }
+];
+
+function getSaturationWater(temp){
+  if(temp <= saturationTable[0].T) return saturationTable[0].W;
+  if(temp >= saturationTable[saturationTable.length-1].T)
+    return saturationTable[saturationTable.length-1].W;
+
+  for(let i=0;i<saturationTable.length-1;i++){
+    let t1 = saturationTable[i].T;
+    let t2 = saturationTable[i+1].T;
+    if(temp >= t1 && temp <= t2){
+      let w1 = saturationTable[i].W;
+      let w2 = saturationTable[i+1].W;
+      return w1 + (w2-w1)*(temp-t1)/(t2-t1);
+    }
+  }
+  return 0;
+}
+
+function calculate(){
+  const Tin = parseFloat(document.getElementById("tin").value);
+  const RH = parseFloat(document.getElementById("rh").value);
+  const Tdew = parseFloat(document.getElementById("tdew").value);
+  let Q = parseFloat(document.getElementById("flow").value);
+  const unit = document.getElementById("flowUnit").value;
+
+  if(unit === "m3hr") Q = Q / 60;
+  if(unit === "cfm") Q = Q * 0.0283168;
+
+  if(isNaN(Tin)||isNaN(RH)||isNaN(Tdew)||isNaN(Q)){
+    alert("Please fill all inputs");
+    return;
+  }
+
+  const Win = getSaturationWater(Tin) * (RH/100);
+  const Wout = getSaturationWater(Tdew);
+  const Wremoved = Math.max(Win - Wout, 0);
+
+  const litrePerHour = (Wremoved * Q * 60) / 1000;
+  const litrePerDay = litrePerHour * 24;
+
+  const out = document.getElementById("output");
+  out.style.display="block";
+  out.innerHTML = `
+    <h3>Moisture Content Results</h3>
+    <p><span class="highlight">Inlet water content:</span> ${Win.toFixed(2)} g/m³</p>
+    <p><span class="highlight">Outlet water content:</span> ${Wout.toFixed(2)} g/m³</p>
+    <hr>
+    <ul>
+      <li>${litrePerHour.toFixed(2)} litres per hour</li>
+      <li>${litrePerDay.toFixed(2)} litres per day</li>
+    </ul>
+    <hr>
+    <p>
+      <strong>Without dryer:</strong> Condensation occurs in pipelines.<br><br>
+      <strong>With dryer:</strong> Condensation risk is significantly reduced.
+    </p>
+  `;
+}
+</script>
+</body>
+</html>
