@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Pressure Profile Visualizer</title>
+
+<style>
+:root{
+  --green:#9dd3af;
+  --dark:#374151;
+  --card:#ffffff;
+  --warn:#dc2626;
+}
+body{
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--green);
+  margin:0;
+  padding:20px;
+}
+.container{
+  max-width:1000px;
+  margin:auto;
+}
+.grid{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:20px;
+}
+
+.form-group{
+  display:flex;
+  flex-direction:column;
+}
+
+.form-group label{
+  font-weight:600;
+  min-height:44px;     /* equal label height */
+  display:flex;
+  align-items:flex-end;
+  color:#333;
+  margin-bottom:6px;
+}
+
+.form-group input{
+  width:100%;
+  padding:8px;
+  border:1px solid #ccc;
+  border-radius:6px;
+}
+
+.card{
+  background:var(--card);
+  padding:26px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+.top-title{
+  text-align:center;
+  font-weight:bold;
+  font-size:25px;
+  color:var(--dark);
+  margin-bottom:6px;
+}
+h1{
+  text-align:center;
+  color:var(--dark);
+  margin-bottom:12px;
+}
+.subtitle{
+  text-align:center;
+  color:#555;
+  margin-bottom:24px;
+  margin-bottom:6px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;
+}
+label{
+  font-weight:bold;
+  color:#333;
+  display:block;
+  margin-bottom:40px;
+}
+input{
+  width:100%;
+  padding:8px;
+  border:1px solid #ccc;
+  border-radius:6px;
+}
+button{
+  margin-top:22px;
+  background:#2fbf71;
+  color:#fff;
+  border:none;
+  padding:12px 22px;
+  font-size:16px;
+  border-radius:8px;
+  cursor:pointer;
+}
+button:hover{
+  background:#23965a;
+}
+
+/* Diagram */
+.diagram{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  margin-top:26px;
+  gap:10px;
+}
+.stage{
+  flex:1;
+  min-width:130px;
+  background:#f3f4f6;
+  border-radius:8px;
+  padding:10px;
+  text-align:center;
+  border-top:6px solid #2fbf71;
+}
+.stage h4{
+  margin:4px 0;
+  font-size:14px;
+  color:#333;
+}
+.stage span{
+  font-weight:bold;
+  color:#111;
+}
+
+/* Results */
+.results{
+  margin-top:26px;
+  background:#f9fafb;
+  padding:18px;
+  border-radius:10px;
+}
+.results h2{
+  margin-top:0;
+  color:var(--dark);
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+th, td{
+  border:1px solid #ddd;
+  padding:8px;
+  text-align:center;
+}
+th{
+  background:#eef7f0;
+}
+.warning{
+  margin-top:14px;
+  color:var(--warn);
+  font-weight:bold;
+}
+.note{
+  margin-top:14px;
+  font-size:14px;
+  color:#555;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <div class="card">
+
+    <div class="top-title">
+      Essential Compressed Air Tools Offered by Systel
+    </div>
+
+    <h1>System Pressure Profile Visualizer</h1>
+
+    <p class="subtitle">
+      Visualize pressure losses across the compressed air system and identify opportunities for optimization
+    </p>
+
+    <div class="grid">
+
+  <!-- TOP ROW -->
+    <div class="form-group">
+      <label>Compressor Discharge Pressure (bar)</label>
+      <input type="number" id="pcomp" step="0.1">
+    </div>
+
+    <div class="form-group">
+      <label>Dryer Pressure Drop (bar)</label>
+      <input type="number" id="pdrop_dryer" step="0.01">
+    </div>
+
+    <div class="form-group">
+      <label>Filter Pressure Drop (bar)</label>
+      <input type="number" id="pdrop_filter" step="0.01">
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="form-group">
+      <label>Main Header Pressure Drop (bar)</label>
+      <input type="number" id="pdrop_header" step="0.01">
+    </div>
+
+    <div class="form-group">
+      <label>Branch / Drop Line Pressure Drop (bar)</label>
+      <input type="number" id="pdrop_branch" step="0.01">
+    </div>
+
+    <div class="form-group">
+      <label>Required Minimum Machine Pressure (bar)</label>
+      <input type="number" id="pmin" step="0.1">
+    </div>
+
+  </div>
+
+    <button onclick="calculate()">Visualize Pressure Profile</button>
+
+    <div id="output" style="display:none;">
+
+      <!-- Diagram -->
+      <div class="diagram">
+        <div class="stage">
+          <h4>Compressor</h4>
+          <span id="d_comp"></span> bar
+        </div>
+        <div class="stage">
+          <h4>After Dryer</h4>
+          <span id="d_dryer"></span> bar
+        </div>
+        <div class="stage">
+          <h4>After Filters</h4>
+          <span id="d_filter"></span> bar
+        </div>
+        <div class="stage">
+          <h4>After Header</h4>
+          <span id="d_header"></span> bar
+        </div>
+        <div class="stage">
+          <h4>Machine Inlet</h4>
+          <span id="d_machine"></span> bar
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="results">
+        <h2>Pressure Summary</h2>
+
+        <table>
+          <tr>
+            <th>Stage</th>
+            <th>Pressure (bar)</th>
+          </tr>
+          <tr><td>Compressor Discharge</td><td id="t_comp"></td></tr>
+          <tr><td>After Dryer</td><td id="t_dryer"></td></tr>
+          <tr><td>After Filters</td><td id="t_filter"></td></tr>
+          <tr><td>After Main Header</td><td id="t_header"></td></tr>
+          <tr><td>Machine Inlet</td><td id="t_machine"></td></tr>
+          <tr><th>Total Pressure Drop</th><th id="t_total"></th></tr>
+        </table>
+
+        <div class="note">
+          <strong>Energy rule-of-thumb:</strong><br>
+          Each 1 bar reduction in system pressure can save approximately <strong>7% compressor energy</strong>.
+          Estimated saving potential: <span id="energySave"></span> %
+        </div>
+
+        <div class="warning" id="warning" style="display:none;">
+          ⚠️ Machine inlet pressure is below the required minimum!
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function calculate(){
+  const Pcomp = parseFloat(pcomp.value);
+  const dDryer = parseFloat(pdrop_dryer.value);
+  const dFilter = parseFloat(pdrop_filter.value);
+  const dHeader = parseFloat(pdrop_header.value);
+  const dBranch = parseFloat(pdrop_branch.value);
+  const Pmin = parseFloat(pmin.value);
+
+  if([Pcomp,dDryer,dFilter,dHeader,dBranch,Pmin].some(isNaN)){
+    alert("Please fill all fields");
+    return;
+  }
+
+  const Pdryer = Pcomp - dDryer;
+  const Pfilter = Pdryer - dFilter;
+  const Pheader = Pfilter - dHeader;
+  const Pmachine = Pheader - dBranch;
+  const Ptotal = Pcomp - Pmachine;
+
+  d_comp.textContent = Pcomp.toFixed(2);
+  d_dryer.textContent = Pdryer.toFixed(2);
+  d_filter.textContent = Pfilter.toFixed(2);
+  d_header.textContent = Pheader.toFixed(2);
+  d_machine.textContent = Pmachine.toFixed(2);
+
+  t_comp.textContent = Pcomp.toFixed(2);
+  t_dryer.textContent = Pdryer.toFixed(2);
+  t_filter.textContent = Pfilter.toFixed(2);
+  t_header.textContent = Pheader.toFixed(2);
+  t_machine.textContent = Pmachine.toFixed(2);
+  t_total.textContent = Ptotal.toFixed(2) + " bar";
+
+  energySave.textContent = (Ptotal * 7).toFixed(1);
+
+  warning.style.display = (Pmachine < Pmin) ? "block" : "none";
+  output.style.display = "block";
+}
+</script>
+
+</body>
+</html>

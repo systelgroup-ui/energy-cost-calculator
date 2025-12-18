@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heat Recovery Calculator</title>
+
+<style>
+:root{
+  --green:#9dd3af;
+  --dark:#374151;
+  --card:#ffffff;
+}
+body{
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--green);
+  margin:0;
+  padding:20px;
+}
+.container{
+  max-width:950px;
+  margin:auto;
+}
+.card{
+  background:var(--card);
+  padding:26px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+.top-title{
+  text-align:center;
+  font-weight:bold;
+  font-size:25px;
+  color:var(--dark);
+  margin-bottom:6px;
+}
+h1{
+  text-align:center;
+  color:var(--dark);
+  margin-bottom:14px;
+}
+.subtitle{
+  text-align:center;
+  color:#555;
+  margin-bottom:24px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:16px;
+}
+label{
+  font-weight:bold;
+  color:#333;
+  margin-bottom:4px;
+  display:block;
+}
+input{
+  width:100%;
+  padding:8px;
+  border:1px solid #ccc;
+  border-radius:6px;
+}
+button{
+  margin-top:22px;
+  background:#2fbf71;
+  color:#fff;
+  border:none;
+  padding:12px 22px;
+  font-size:16px;
+  border-radius:8px;
+  cursor:pointer;
+}
+button:hover{
+  background:#23965a;
+}
+.results{
+  margin-top:26px;
+  background:#f9fafb;
+  padding:18px;
+  border-radius:10px;
+}
+.results h2{
+  margin-top:0;
+  color:var(--dark);
+}
+.result-row{
+  margin-bottom:10px;
+}
+.note{
+  margin-top:16px;
+  font-size:14px;
+  color:#555;
+  background:#eef7f0;
+  padding:10px;
+  border-radius:6px;
+}
+.explainer{
+  margin-top:10px;
+  font-size:13px;
+  color:#666;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <div class="card">
+
+    <div class="top-title">
+      Essential Compressed Air Tools Offered by Systel
+    </div>
+
+    <h1>Heat Recovery Calculator</h1>
+
+    <p class="subtitle">
+      Estimate recoverable heat from an air compressor and equivalent savings versus electric heating
+    </p>
+
+    <div class="grid">
+      <div>
+        <label>Compressor Shaft Power (kW)</label>
+        <input type="number" id="power" step="0.1">
+      </div>
+
+      <div>
+        <label>Recoverable Heat Fraction</label>
+        <input type="number" id="fraction" step="0.01" value="0.75">
+      </div>
+
+      <div>
+        <label>Operating Hours per Year</label>
+        <input type="number" id="hours">
+      </div>
+
+      <div>
+        <label>Inlet Water Temperature (°C)</label>
+        <input type="number" id="tin">
+      </div>
+
+      <div>
+        <label>Target Outlet Water Temperature (°C)</label>
+        <input type="number" id="tout">
+      </div>
+
+      <div>
+        <label>Electricity Tariff (₹/kWh)</label>
+        <input type="number" id="tariff" step="0.1">
+      </div>
+    </div>
+
+    <button onclick="calculate()">Calculate Heat Recovery</button>
+
+    <div class="results" id="results" style="display:none;">
+      <h2>Results</h2>
+
+      <div class="result-row"><strong>Recoverable Heat:</strong> <span id="qrec"></span> kW</div>
+
+      <div class="result-row"><strong>Daily Recoverable Energy:</strong> <span id="edaily"></span> kWh/day</div>
+      <div class="result-row"><strong>Monthly Recoverable Energy:</strong> <span id="emonthly"></span> kWh/month</div>
+      <div class="result-row"><strong>Annual Recoverable Energy:</strong> <span id="eyearly"></span> kWh/year</div>
+
+      <div class="result-row"><strong>Equivalent Hot Water Production:</strong> <span id="flow"></span> L/h</div>
+
+      <hr>
+
+      <div class="result-row"><strong>Daily Cost Savings:</strong> ₹ <span id="sdaily"></span></div>
+      <div class="result-row"><strong>Monthly Cost Savings:</strong> ₹ <span id="smonthly"></span></div>
+      <div class="result-row"><strong>Annual Cost Savings:</strong> ₹ <span id="syearly"></span></div>
+
+      <div class="note">
+        Assumes continuous and useful demand for hot water during compressor operating hours.
+      </div>
+
+      <div class="explainer">
+        <strong>Back-of-the-envelope explanation:</strong><br>
+        Compressor input power × recoverable fraction gives usable heat.  
+        This heat is converted to hot water based on temperature rise and the specific heat of water.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function calculate(){
+  const P = parseFloat(document.getElementById("power").value);
+  const f = parseFloat(document.getElementById("fraction").value);
+  const H = parseFloat(document.getElementById("hours").value);
+  const Tin = parseFloat(document.getElementById("tin").value);
+  const Tout = parseFloat(document.getElementById("tout").value);
+  const tariff = parseFloat(document.getElementById("tariff").value);
+
+  if(isNaN(P)||isNaN(f)||isNaN(H)||isNaN(Tin)||isNaN(Tout)||isNaN(tariff)){
+    alert("Please fill all fields");
+    return;
+  }
+
+  const deltaT = Tout - Tin;
+  if(deltaT <= 0){
+    alert("Outlet temperature must be higher than inlet temperature");
+    return;
+  }
+
+  const cp = 4.186; // kJ/kg·K
+
+  const Qrec = P * f;                 // kW
+  const Eyear = Qrec * H;             // kWh/year
+  const Edaily = Eyear / 365;
+  const Emonthly = Eyear / 12;
+
+  const mDot = Qrec / (cp * deltaT); // kg/s
+  const flow = mDot * 3600;                   // L/h
+
+  const Syear = Eyear * tariff;
+  const Sdaily = Syear / 365;
+  const Smonthly = Syear / 12;
+
+  document.getElementById("qrec").innerText = Qrec.toFixed(2);
+  document.getElementById("edaily").innerText = Edaily.toFixed(1);
+  document.getElementById("emonthly").innerText = Emonthly.toFixed(0);
+  document.getElementById("eyearly").innerText = Eyear.toFixed(0);
+  document.getElementById("flow").innerText = flow.toFixed(0);
+  document.getElementById("sdaily").innerText = Sdaily.toFixed(0);
+  document.getElementById("smonthly").innerText = Smonthly.toFixed(0);
+  document.getElementById("syearly").innerText = Syear.toFixed(0);
+
+  document.getElementById("results").style.display = "block";
+}
+</script>
+
+</body>
+</html>
