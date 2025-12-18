@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Receiver Tank Sizing Tool</title>
+
+<style>
+:root{
+  --green:#9dd3af;
+  --grey:#4b5563;
+  --white:#ffffff;
+}
+body{
+  font-family:Arial, Helvetica, sans-serif;
+  background:var(--green);
+  margin:0;
+  padding:20px;
+}
+.container{
+  max-width:900px;
+  margin:auto;
+  background:var(--white);
+  padding:20px 24px;
+  border-radius:12px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.1);
+}
+.top-title{
+  text-align:center;
+  color:var(--grey);
+  font-size:30px;
+  font-weight:600;
+  margin-bottom:6px;
+}
+h1{
+  text-align:center;
+  color:var(--grey);
+  margin-bottom:6px;
+}
+p.note{
+  color:#555;
+  font-size:14px;
+  margin-bottom:20px;
+}
+.section{
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  padding:16px;
+  margin-bottom:18px;
+}
+.section h3{
+  margin-top:0;
+  margin-bottom:12px;
+  font-size:18px;
+  color:var(--grey);
+}
+.row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+label{
+  font-size:14px;
+  color:#333;
+  display:block;
+  margin-bottom:4px;
+}
+input, select{
+  width:100%;
+  padding:8px 10px;
+  border-radius:6px;
+  border:1px solid #d1d5db;
+  font-size:14px;
+}
+.radio-group{
+  display:flex;
+  gap:16px;
+  font-size:14px;
+}
+button{
+  background:#16a34a;
+  color:white;
+  border:none;
+  padding:10px 16px;
+  border-radius:8px;
+  font-size:15px;
+  cursor:pointer;
+}
+button:hover{background:#15803d;}
+
+.results{
+  display:none;
+  margin-top:16px;
+}
+.card{
+  background:#f9fafb;
+  border-radius:10px;
+  padding:16px;
+  border:1px solid #e5e7eb;
+}
+.warning{
+  color:#b45309;
+  font-size:14px;
+  margin-top:10px;
+}
+.result-footer{
+  margin-top:18px;
+  background:#f0fdf4;
+  border:1px solid #bbf7d0;
+  border-radius:10px;
+  padding:14px;
+  font-size:14px;
+}
+.result-card{
+  margin-top:10px;
+  font-size:20px;
+}
+.cta-btn{
+  margin-top:6px;
+  background:#16a34a;
+  color:white;
+  padding:8px 12px;
+  border-radius:6px;
+  display:inline-block;
+  cursor:pointer;
+  font-size:14px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+<div class="top-title">Essential Compressed Air Tools Offered by Systel</div>
+<h1>Receiver Tank Sizing Tool</h1>
+
+<!-- PURPOSE -->
+<div class="section">
+  <h3>Purpose</h3>
+  <div class="radio-group">
+    <label><input type="radio" name="purpose" checked> Design new receiver</label>
+    <label><input type="radio" name="purpose"> Check existing receiver</label>
+  </div>
+</div>
+
+<!-- COMPRESSOR MODEL -->
+<div class="section">
+  <h3>Compressor Model</h3>
+  <select id="model">
+    <option>Reciprocating</option>
+    <option>Screw – Fixed speed</option>
+    <option>Screw – VFD / VSD</option>
+    <option>Centrifugal</option>
+  </select>
+</div>
+
+<!-- FLOW -->
+<div class="section">
+  <h3>Compressor Capacity (Free Air – FAD)</h3>
+  <div class="row">
+    <div>
+      <label>Capacity</label>
+      <input type="number" id="capacity">
+    </div>
+    <div>
+      <label>Units</label>
+      <select id="capacityUnit">
+        <option value="cfm">CFM</option>
+        <option value="m3min">m³/min</option>
+        <option value="nm3min">Nm³/min</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- PRESSURE -->
+<div class="section">
+  <h3>Pressure Band</h3>
+  <div class="row">
+    <div>
+      <label>P<sub>high</sub> (bar g)</label>
+      <input type="number" id="phigh">
+    </div>
+    <div>
+      <label>P<sub>low</sub> (bar g)</label>
+      <input type="number" id="plow">
+    </div>
+  </div>
+</div>
+
+<!-- STORAGE OBJECTIVE -->
+<div class="section">
+  <h3>Storage Objective</h3>
+  <select id="objective">
+    <option value="stability">Control stability (seconds)</option>
+    <option value="peak">Peak event support</option>
+  </select>
+
+  <div id="stabilityInputs" style="margin-top:12px;">
+    <label>Buffer time (seconds)</label>
+    <input type="number" id="bufferTime">
+  </div>
+
+  <div id="peakInputs" style="display:none;margin-top:12px;">
+    <label>Peak demand (CFM)</label>
+    <input type="number" id="peakDemand">
+    <label style="margin-top:8px;">Peak duration (seconds)</label>
+    <input type="number" id="peakTime">
+  </div>
+</div>
+
+<button onclick="calculate()">Calculate</button>
+
+<!-- RESULT -->
+<div class="results" id="results">
+  <div class="card">
+    <h3>Required Receiver Volume</h3>
+    <p id="resultVolume"></p>
+  </div>
+</div>
+
+<div id="warnings" class="warning"></div>
+
+<!-- FOOTER -->
+<div id="resultFooter" class="result-footer" style="display:none;">
+  Simplified engineering estimate using free air (FAD) basis.  
+  For critical applications, use detailed design.
+
+  <div class="result-card">
+    <strong>Need help?</strong><br>
+    <span style="color:#16a34a;cursor:pointer;" onclick="toggleContact()">
+      Click here to contact Systel Energy Solutions
+    </span>
+
+    <div id="contact" style="display:none;">
+      <p>✉️ <a href="mailto:support@systel.asia">support@systel.asia</a></p>
+      <div class="cta-btn" onclick="window.location.href='tel:9843145445'">
+        📞 Call Systel Energy Solutions
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function toM3Min(v,u){
+  if(u==='cfm') return v*0.0283168;
+  return v;
+}
+
+objective.onchange = () => {
+  stabilityInputs.style.display =
+    objective.value==='stability'?'block':'none';
+  peakInputs.style.display =
+    objective.value==='peak'?'block':'none';
+};
+
+function calculate(){
+  const Qc = toM3Min(+capacity.value,capacityUnit.value);
+  const Ph = +phigh.value;
+  const Pl = +plow.value;
+  const dP = Ph-Pl;
+
+  if(Qc<=0 || dP<=0){
+    alert("Enter valid inputs");
+    return;
+  }
+
+  let V=0, warningText="";
+
+  if(objective.value==='stability'){
+    const t=+bufferTime.value/60;
+    if(t<=0){alert("Invalid buffer time");return;}
+    V=(Qc*t)/dP;
+  }else{
+    const Qp=toM3Min(+peakDemand.value,capacityUnit.value);
+    const t=+peakTime.value/60;
+    const Qdef=Qp-Qc;
+    if(Qdef<=0){
+      warningText="Peak demand does not exceed compressor capacity.";
+      V=0;
+    }else{
+      V=(Qdef*t)/dP;
+    }
+  }
+
+  resultVolume.innerText = V.toFixed(2)+" m³ ("+(V*1000).toFixed(0)+" L)";
+  warnings.innerText = warningText;
+
+  results.style.display="block";
+  resultFooter.style.display="block";
+}
+
+function toggleContact(){
+  contact.style.display =
+    contact.style.display==='none'?'block':'none';
+}
+</script>
+</body>
+</html>
