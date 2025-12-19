@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dryer & Filter Selection Helper</title>
+
+<style>
+:root{
+  --green:#9dd3af;
+  --dark:#374151;
+  --card:#ffffff;
+  --cta:#2fbf71;
+}
+body{
+  font-family: Arial, Helvetica, sans-serif;
+  background:var(--green);
+  margin:0;
+  padding:20px;
+}
+.container{
+  max-width:900px;
+  margin:auto;
+  background:var(--card);
+  border-radius:12px;
+  padding:24px;
+  box-shadow:0 10px 25px rgba(0,0,0,.1);
+}
+h1{
+  color:var(--dark);
+  text-align:center;
+  margin-bottom:8px;
+}
+p.note{
+  font-size:14px;
+  color:#555;
+  margin-bottom:20px;
+  text-align:center;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;
+}
+label{
+  font-weight:bold;
+  font-size:14px;
+}
+input,select{
+  width:100%;
+  padding:8px;
+  margin-top:6px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+button{
+  margin-top:20px;
+  background:#2fbf71;
+  color:white;
+  border:none;
+  padding:12px 20px;
+  font-size:16px;
+  border-radius:8px;
+  cursor:pointer;
+  width:100%;
+}
+button:hover{background:#23965a;}
+.result{
+  margin-top:24px;
+  background:#f4f6f8;
+  padding:20px;
+  border-radius:10px;
+}
+.result h3{margin-top:0;}
+ul{padding-left:18px;}
+.footer-note{
+  margin-top:12px;
+  font-size:13px;
+  color:#555;
+  font-style:italic;
+}
+
+/* CTA */
+.cta-btn{
+  margin-top:14px;
+  background:var(--cta);
+  color:#fff;
+  padding:12px;
+  border-radius:8px;
+  text-align:center;
+  cursor:pointer;
+  font-weight:bold;
+}
+.cta-btn:hover{
+  background:#23965a;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>Essential Compressed Air Tools Offered by Systel</h1>
+  <h1>Dryer & Filter Selection Helper</h1>
+  <p class="note">Rule-of-thumb tool for preliminary compressed air dryer and filter selection</p>
+
+  <div class="grid">
+    <div>
+      <label>Compressor Flow</label>
+      <input type="number" id="flow" placeholder="Enter flow">
+    </div>
+
+    <div>
+      <label>Flow Unit</label>
+      <select id="unit">
+        <option value="cfm">CFM</option>
+        <option value="m3h">m³/hr</option>
+        <option value="m3min">m³/min</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Operating Pressure (bar)</label>
+      <input type="number" id="pressure" placeholder="">
+    </div>
+
+    <div>
+      <label>Required Dew Point</label>
+      <select id="dewpoint">
+        <option value="+3">+3 °C</option>
+        <option value="-20">-20 °C</option>
+        <option value="-40">-40 °C</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Application Type</label>
+      <select id="application">
+        <option>General Plant</option>
+        <option>Instrumentation</option>
+        <option>Food & Beverage</option>
+        <option>Pharma</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Ambient Temperature (°C)</label>
+      <input type="number" id="ambient" placeholder="">
+    </div>
+
+    <div>
+      <label>Inlet Air Temperature (°C)</label>
+      <input type="number" id="inlet" placeholder="">
+    </div>
+  </div>
+
+  <button onclick="calculate()">Calculate Recommendation</button>
+
+  <div id="output" class="result" style="display:none"></div>
+
+  <div class="cta-btn" id="ctaMain" onclick="showContacts()" style="display:none;">
+    For more information, Contact Systel
+  </div>
+
+  <div id="contacts" style="display:none; margin-top:12px;">
+    <div class="cta-btn" onclick="window.location.href='tel:9843145445'">
+      📞 Call Systel Energy Solutions
+    </div>
+    <div class="cta-btn" onclick="window.location.href='mailto:support@systel.asia'">
+      ✉️ Email: support@systel.asia
+    </div>
+  </div>
+</div>
+
+<script>
+function toM3h(flow, unit){
+  if(unit==="cfm") return flow * 1.699;
+  if(unit==="m3min") return flow * 60;
+  return flow;
+}
+function fromM3h(flow, unit){
+  if(unit==="cfm") return flow / 1.699;
+  if(unit==="m3min") return flow / 60;
+  return flow;
+}
+function displayUnit(unit){
+  if(unit==="cfm") return "CFM";
+  if(unit==="m3h") return "m³/hr";
+  if(unit==="m3min") return "m³/min";
+}
+
+function calculate(){
+  let flow = parseFloat(document.getElementById("flow").value);
+  let unit = document.getElementById("unit").value;
+  let pressure = parseFloat(document.getElementById("pressure").value);
+  let dew = document.getElementById("dewpoint").value;
+  let app = document.getElementById("application").value;
+  let ambient = parseFloat(document.getElementById("ambient").value);
+  let inlet = parseFloat(document.getElementById("inlet").value);
+
+  if(isNaN(flow) || isNaN(pressure) || isNaN(ambient) || isNaN(inlet)){
+    alert("Please fill all required fields.");
+    return;
+  }
+
+  let flow_m3h = toM3h(flow, unit);
+
+  /* Safety Factor */
+  let SF = 1.15;
+
+  /* Temperature Factor */
+  let tempFactor = 1;
+  if(inlet > 40) tempFactor += (inlet - 40) * 0.01;
+  if(ambient > 35) tempFactor += (ambient - 35) * 0.005;
+
+  /* Pressure Factor (reference 7 bar) */
+  let pressureFactor = 1;
+  if(pressure < 7) pressureFactor += (7 - pressure) * 0.03;
+  if(pressure > 7) pressureFactor -= (pressure - 7) * 0.02;
+
+  /* Dew Point Factor */
+  let dewFactor = 1;
+  if(dew === "-20") dewFactor = 1.25;
+  if(dew === "-40") dewFactor = 1.5;
+
+  let dryer_m3h = flow_m3h * SF * tempFactor * pressureFactor * dewFactor;
+  let dryer_final = fromM3h(dryer_m3h, unit).toFixed(1);
+
+  let dryerType = "Refrigerated Dryer";
+  if(dew !== "+3") dryerType = "Desiccant Dryer";
+
+  let filters = [];
+  if(app==="General Plant"){
+    filters = ["Coalescing pre-filter before dryer","Dust filter after dryer"];
+  }
+  if(app==="Instrumentation"){
+    filters = ["Pre-filter + fine coalescing filter","High-grade dust filter"];
+  }
+  if(app==="Food & Beverage" || app==="Pharma"){
+    filters = ["High-efficiency coalescing filter","Activated carbon + dust filter"];
+  }
+
+  document.getElementById("output").style.display="block";
+  document.getElementById("output").innerHTML = `
+    <h3>Recommended Configuration</h3>
+    <p><b>Dryer Type:</b> ${dryerType}</p>
+    <p><b>Recommended Dryer Capacity:</b> ${dryer_final} ${displayUnit(unit)}</p>
+    
+    <p><b>Suggested Filter Stages:</b></p>
+    <ul>${filters.map(f=>`<li>${f}</li>`).join("")}</ul>
+    <div class="footer-note">
+      Final selection to be confirmed with Systel based on site conditions and manufacturer correction factors.
+    </div>
+  `;
+
+  document.getElementById("ctaMain").style.display = "block";
+}
+
+function showContacts(){
+  let c = document.getElementById("contacts");
+  c.style.display = c.style.display === "none" ? "block" : "none";
+}
+</script>
+</body>
+</html>
