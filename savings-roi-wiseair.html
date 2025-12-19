@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>WISEAIR COMPRESSED AIR SAVINGS AND ROI SIMULATOR</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --wise-yellow:#FFBF00;
+    --wise-grey:#4b5563;
+    --bg:#fff;
+  }
+  body{
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg,#fff9e6 0%,#fffef8 100%);
+    padding:18px; color:var(--wise-grey);
+  }
+  .container{
+    max-width:1200px;margin:0 auto;background:var(--bg);border-radius:10px;
+    box-shadow:0 18px 50px rgba(0,0,0,0.12);overflow:hidden;
+  }
+  .header{
+    background:linear-gradient(90deg,var(--wise-yellow),#f7c24b);
+    color:var(--wise-grey);padding:16px 18px;text-align:center;font-weight:800;font-size:18px;
+  }
+  .content{padding:18px}
+  .section{margin-bottom:18px}
+  .section-title{color:var(--wise-grey);font-size:16px;margin-bottom:10px;border-bottom:3px solid rgba(115,115,115,0.06);padding-bottom:8px}
+  .input-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+  .input-group{display:flex;flex-direction:column}
+  .input-group label{font-size:13px;color:var(--wise-grey);margin-bottom:6px}
+  input[type="text"],input[type="email"],input[type="number"],input[type="tel"],select{
+    padding:8px 10px;border-radius:8px;border:1.5px solid #e7e7e7;background:#fff
+  }
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
+  th{background:var(--wise-yellow);color:var(--wise-grey);padding:10px;text-align:left}
+  td{padding:10px;border-bottom:1px solid #f3f3f3;vertical-align:middle}
+  td input{width:100%;padding:6px;border-radius:6px;border:1px solid #ddd}
+  td input[readonly]{background:#fbfbfb;cursor:not-allowed}
+  .total-row{background:#fff9e6;font-weight:700}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px}
+  .card{background:#fff;border-radius:8px;padding:12px;box-shadow:0 1px 6px rgba(0,0,0,0.04);border:1px solid #f2f2f2}
+  .card h4{font-size:13px;color:var(--wise-grey);margin-bottom:6px}
+  .card p{font-size:16px;font-weight:700;color:var(--wise-grey)}
+  .muted{color:#666;font-size:12px}
+  .hidden{display:none}
+  .btn{background:linear-gradient(90deg,var(--wise-yellow),#f7c24b);color:var(--wise-grey);border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700}
+  .btn-ghost{background:transparent;border:2px solid #eee;color:var(--wise-grey);padding:8px 12px;border-radius:8px;cursor:pointer}
+  footer{padding:10px 18px;text-align:center;color:#666;font-size:13px}
+  .row-right{text-align:right}
+  .notice{font-size:13px;color:#444;margin-bottom:8px}
+  .error{color:#b00020;font-size:13px;margin-top:6px}
+  .success{color:green;font-size:13px;margin-top:6px}
+  .small{font-size:12px;color:#666}
+  .controls{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+  .radio-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .catalog-wrap{margin-top:18px}
+  .mono{font-family:monospace}
+  .label-small { font-size:12px; color:#666; margin-top:6px; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">WISEAIR COMPRESSED AIR SAVINGS AND ROI SIMULATOR</div>
+
+    <div class="content">
+
+      <!-- PAGE 1: INPUTS -->
+      <div id="pageInputs">
+        <div class="section">
+          <h2 class="section-title">Customer & Contact (mandatory)</h2>
+          <div class="notice">Fill these before starting calculations.</div>
+          <div class="input-grid">
+            <div class="input-group"><label>Name *</label><input id="custName" type="text" placeholder="Full name"></div>
+            <div class="input-group"><label>Email *</label><input id="custEmail" type="email" placeholder="email@example.com"></div>
+            <div class="input-group"><label>Phone *</label><input id="custPhone" type="tel" placeholder="Phone number"></div>
+            <div class="input-group"><label>Company *</label><input id="custCompany" type="text" placeholder="Company / Site name"></div>
+          </div>
+          <div id="custError" class="error hidden">Please fill Name, Email, Phone and required numeric inputs.</div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">1) Input Parameters (enter values manually)</h2>
+          <div class="notice">Mandatory fields- <strong>Estimated Flow (CFM)</strong> auto-calculates as <code>Installed kW / SPC</code>, but you may edit — your input will stay until cleared.</div>
+
+          <div>
+  <h3 style="margin-bottom:8px">Mandatory</h3>
+  <div class="input-grid">
+
+    <!-- EXISTING LEFT-SIDE FIELDS -->
+    <div class="input-group"><label>Number of Compressors *</label><input id="numCompressors" type="number" min="0"></div>
+    <div class="input-group"><label>Total Installed Compressor Power (kW) *</label><input id="totalPower" type="number" min="0"></div>
+    <div class="input-group"><label>Average Load Factor (1-100 %) *</label><input id="loadFactor" type="number" step="0.01" min="0" max="100"></div>
+    <div class="input-group"><label>Operating Hours per Day *</label><input id="hoursPerDay" type="number" min="0"></div>
+    <div class="input-group"><label>Operating Days per Year *</label><input id="daysPerYear" type="number" min="0"></div>
+    <div class="input-group"><label>Power Cost (₹/kWh) *</label><input id="powerCost" type="number" step="0.01" min="0"></div>
+    <div class="input-group"><label>Current System Pressure (bar g) *</label><input id="currentPressure" type="number" step="0.1" min="0"></div>
+    <div class="input-group"><label>Target System Pressure (bar g) *</label><input id="targetPressure" type="number" step="0.1" min="0"></div>
+    <div class="input-group"><label>Specific Power (kW per 1 CFM) *</label><input id="specificPower" type="number" step="0.0001" min="0"></div>
+    <div class="input-group"><label>Air Loss per Conventional Drain (CFM) *</label><input id="drainLoss" type="number" value="4" min="0"></div>
+    <div class="input-group"><label>Number of Refrigeration/Desiccant Dryers  *</label><input id="numDryers" type="number" min="0"></div>
+    <div class="input-group"><label>Number of Departments / Main Headers  *</label><input id="numHeaders" type="number" min="0"></div>
+
+    <!-- MOVED FROM RIGHT -->
+    <div class="input-group">
+      <label>Estimated Flow (CFM)</label>
+      <input id="estimatedFlow" type="number" placeholder="Auto or manual">
+      <div class="label-small">If you type a value it will remain until you clear this field.</div>
+    </div>
+    <div class="input-group"><label>Baseline Leak Level (%) *</label><input id="baselineLeak" type="number" step="0.1" min="0"></div>
+    <div class="input-group"><label>Target Leak Level (%) *</label><input id="targetLeak" type="number" step="0.1" min="0"></div>
+    <div class="input-group"><label>Number of Timer/Manual Drains in Operation *</label><input id="numDrains" type="number" min="0"></div>
+
+  </div>
+</div>
+
+          <div class="controls">
+            <button id="btnInputsNext" class="btn">Next → Energy & Savings</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 2: ENERGY & SAVINGS (exact 17-line format) -->
+      <div id="pageEnergy" class="hidden">
+        <div class="section">
+          <h2 class="section-title">3) Energy & Savings Computation (auto)</h2>
+
+          <table>
+            <tr><th>Parameter</th><th>Value</th></tr>
+            <tr><td>1. Baseline kWh/day</td><td id="baselineCalc">0.00</td></tr>
+            <tr><td>2. Baseline kW (avg)</td><td id="baselineKW">0.00</td></tr>
+            <tr><td>3. Estimated Flow (CFM)</td><td id="estFlow">0.00</td></tr>
+            <tr><td>4. Pressure Reduction (bar)</td><td id="pressureRed">0.00</td></tr>
+            <tr><td>5. Pressure Optimization Saving (%)</td><td id="pressureSavingPct">0.00%</td></tr>
+            <tr><td>6. Pressure Savings (kWh/day)</td><td id="pressureSavingKWh">0.00</td></tr>
+            <tr><td>7. Leak Reduction (%)</td><td id="leakReduction">0.00%</td></tr>
+            <tr><td>8. Leak Flow Saved (CFM)</td><td id="leakFlowSaved">0.00</td></tr>
+            <tr><td>9. Leak Savings (kWh/day)</td><td id="leakSavings">0.00</td></tr>
+            <tr><td>10. Zero-Loss Drains – Flow Saved (CFM)</td><td id="drainFlowSaved">0.00</td></tr>
+            <tr><td>11. Zero-Loss Drains – Savings (kWh/day)</td><td id="drainSavings">0.00</td></tr>
+            <tr class="total-row"><td>12. Total Savings (kWh/day)</td><td id="totalSavingsDay">0.00</td></tr>
+            <tr><td>13. Total Savings (kWh/month)</td><td id="totalSavingsMonth">0.00</td></tr>
+            <tr><td>14. Total Savings (kWh/year)</td><td id="totalSavingsYear">0.00</td></tr>
+            <tr><td>15. Energy Cost Savings (₹/day)</td><td id="costSavingsDay">₹0.00</td></tr>
+            <tr><td>16. Energy Cost Savings (₹/month)</td><td id="costSavingsMonth">₹0.00</td></tr>
+            <tr class="total-row"><td>17. Energy Cost Savings (₹/year)</td><td id="costSavingsYear">₹0.00</td></tr>
+          </table>
+
+          <div class="controls">
+            <button id="btnEnergyBack" class="btn-ghost">← Back</button>
+            <button id="btnEnergyNext" class="btn">Next → Summary & Catalog</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 3: SUMMARY & SENSOR CATALOG (combined) -->
+      <div id="pageSummaryCatalog" class="hidden">
+        <div class="section">
+          <h2 class="section-title">Summary & ROI</h2>
+
+          <div class="summary-grid">
+            <div class="card"><h4>CAPEX (one-time)</h4><p id="outCapex">₹0.00</p><div class="muted">Hardware (excl drains) + Installation + Assessment</div></div>
+            <div class="card"><h4>OPEX (annual)</h4><p id="outOpex">₹0.00</p><div class="muted">Annual Cloud subscription</div></div>
+            <div class="card"><h4>Total First-Year Investment</h4><p id="outTotalInvestment">₹0.00</p><div class="muted">CAPEX + OPEX</div></div>
+            <div class="card"><h4>Annual Energy Cost Savings (₹/year)</h4><p id="outAnnualSavings">₹0.00</p></div>
+            <div class="card"><h4>Year 1 Net (Savings − Investment)</h4><p id="outYear1">₹0.00</p></div>
+            <div class="card"><h4>Year 2 Net (Year Net 1 + Savings)</h4><p id="outYear2">₹0.00</p></div>
+            <div class="card"><h4>Payback</h4><p id="outPayback">-</p></div>
+            <div class="card"><h4>ROI (simple)</h4><p id="outROI">-</p><div class="muted">(Net Annual Savings / CAPEX) ×100</div></div>
+          </div>
+
+          <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center">
+            <div><button id="btnSummaryBack" class="btn-ghost">← Back</button></div>
+            <div class="controls">
+              <button id="btnSubmit" class="btn">Submit & Mail</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SENSOR CATALOG (full) -->
+        <div class="section catalog-wrap">
+          <h2 class="section-title">2) Sensor Product Catalog (editable)</h2>
+          <div class="notice">Select sensor options and adjust unit costs if required. Quantities auto-calc from Inputs. Drain Wall qty is manual and NOT included in device count for cloud calculation.</div>
+
+          <table class="catalog-table">
+            <thead><tr><th>Product</th><th>Option</th><th>Unit Cost (₹)</th><th>Quantity</th><th>Total (₹)</th></tr></thead>
+            <tbody>
+              <!-- Flow sensor selection (radio: pick only one) -->
+              <tr>
+                <td>WAFS — Flow Sensor (choose 1)</td>
+                <td>
+                  <div class="radio-row">
+                    <label><input type="radio" name="flowModel" id="wafs103" value="103"> WAFS-103 </label>
+                    <label><input type="radio" name="flowModel" id="wafs104" value="104"> WAFS-104 </label>
+                  </div>
+                </td>
+                <td><input id="unitCostFlowSensor" type="number" value="" placeholder=""><div class="small">(auto sets on pick)</div></td>
+                <td><input id="qtyFlowSensor" type="number" readonly placeholder=""></td>
+                <td id="totalFlowSensor">-</td>
+              </tr>
+
+              <!-- Dew point -->
+              <tr>
+                <td>WADS-201 — Dew Point Sensor</td>
+                <td>-</td>
+                <td><input id="unitCostDewPoint" type="number" value="81926"></td>
+                <td><input id="qtyDewPoint" type="number" readonly placeholder=""></td>
+                <td id="totalDewPoint">-</td>
+              </tr>
+
+              <!-- Pressure sensor -->
+              <tr>
+                <td>WAPS-501 — Pressure Sensor</td>
+                <td>-</td>
+                <td><input id="unitCostPressure" type="number" value="18965"></td>
+                <td><input id="qtyPressure" type="number" readonly placeholder=""></td>
+                <td id="totalPressure">-</td>
+              </tr>
+
+              <!-- Power meter -->
+              <tr>
+                <td>WAPM-402 — Power Meter</td>
+                <td>-</td>
+                <td><input id="unitCostPowerMeter" type="number" value="39205.5"></td>
+                <td><input id="qtyPowerMeter" type="number" readonly placeholder=""></td>
+                <td id="totalPowerMeter">-</td>
+              </tr>
+
+              <!-- Drain Wall options (radio) with manual qty -->
+              <tr>
+                <td>Drain Wall (WAM series)</td>
+                <td>
+                  <div class="radio-row">
+                    <label><input type="radio" name="drainModel" id="wam80" value="80"> WAM-80 (80 L/HR )</label>
+                    <label><input type="radio" name="drainModel" id="wam425" value="425"> WAM-425 (425 L/HR )</label>
+                    <label><input type="radio" name="drainModel" id="wam850" value="850"> WAM-850 (850 L/HR )</label>
+                  </div>
+                </td>
+                <td><input id="unitCostDrain" type="number" value="" placeholder="" readonly></td>
+                <td><input id="qtyDrain" type="number" placeholder=""readonly></td>
+                <td id="totalDrain">-</td>
+              </tr>
+
+              <!-- Cloud subscription slab logic -->
+              <tr>
+                <td>WASM-604 — Cloud Subscription (Annual)</td>
+                <td>Slab pricing (auto)</td>
+                <td><input id="unitCostCloud" type="number" value="" placeholder="" readonly></td>
+                <td><input id="qtyCloud" type="number" readonly value="1"></td>
+                <td id="totalCloud">-</td>
+              </tr>
+
+              <!-- Installation (5% of hardware excluding drains) -->
+              <tr>
+                <td>Installation (5% of hardware, drains excluded)</td>
+                <td>Auto</td>
+                <td><input id="unitCostInstallation" type="number" value="" readonly></td>
+                <td><input id="qtyInstallation" type="number" readonly value="1"></td>
+                <td id="totalInstallation">-</td>
+              </tr>
+
+              <!-- Baseline assessment optional -->
+              <tr>
+                <td>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <input id="includeAssessment" type="checkbox">
+                    <label for="includeAssessment" class="small-label">Baseline Assessment </label>
+                  </div>
+                </td>
+                <td>Optional</td>
+                <td><input id="unitCostAssessment" type="number" value="2500"></td>
+                <td><input id="qtyAssessment" type="number" readonly value="1"></td>
+                <td id="totalAssessment">-</td>
+              </tr>
+
+              <tr class="total-row">
+                <td colspan="4" style="text-align:right">CAPEX (Hardware excluding drains + Installation + Assessment)</td>
+                <td id="catalogCapex">-</td>
+              </tr>
+
+              <tr>
+                <td colspan="4" style="text-align:right">OPEX (Annual Cloud Subscription)</td>
+                <td id="catalogOpex">-</td>
+              </tr>
+
+              <tr class="total-row">
+                <td colspan="4" style="text-align:right">Total Investment (1st year: CAPEX + OPEX)</td>
+                <td id="catalogTotalInvestment">-</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <footer>Fields start blank. Fill required inputs first. Drain Wall quantity is manual and NOT included in cloud device count or CAPEX.</footer>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+/* =======================
+   Utilities & formatting
+   ======================= */
+function qs(id){return document.getElementById(id);}
+function fmtRupee(v){
+  if (!isFinite(v) || v===null) return "₹0.00";
+  return "₹" + Number(v).toLocaleString('en-IN',{maximumFractionDigits:2,minimumFractionDigits:2});
+}
+function fmtNum(v,d=2){
+  if (!isFinite(v) || v===null) return Number(0).toFixed(d);
+  return Number(v).toFixed(d);
+}
+
+/* =======================
+   Page elements
+   ======================= */
+const pageInputs = qs('pageInputs');
+const pageEnergy = qs('pageEnergy');
+const pageSummaryCatalog = qs('pageSummaryCatalog');
+
+/* =======================
+   Default prices
+   ======================= */
+const PRICES = {
+  WAFS_103:211500,
+  WAFS_104:152950,
+  WADS_201:81926,
+  WAPS_501:18965,
+  WAPM_402:39205.5,
+  WAM_80:15438,
+  WAM_425:39813,
+  WAM_850:43875,
+  
+};
+
+
+
+/* =======================
+   State
+   ======================= */
+let estimatedFlowManual = false; // B1: manual override stays until cleared
+
+/* =======================
+   Navigation & validation
+   ======================= */
+qs('btnInputsNext').addEventListener('click',()=>{
+  if(!validateInputs()){
+    alert("Please complete all mandatory fields (marked *).");
+    return;
+  }
+  initializeCatalogDefaults();
+  updateCatalogQuantitiesAndTotals();
+  updateCatalogTotals();
+  calculateEnergy(); // compute before showing
+  updateSummaryValues();
+  showPage('energy');
+});
+
+qs('btnEnergyBack').addEventListener('click', ()=> showPage('inputs'));
+qs('btnEnergyNext').addEventListener('click', ()=>{
+  if(!validateInputs()){ alert("Please complete all mandatory fields."); showPage('inputs'); return;}
+  calculateEnergy();
+  updateCatalogQuantitiesAndTotals();
+  updateCatalogTotals();
+  updateSummaryValues();
+  showPage('summaryCatalog');
+});
+qs('btnSummaryBack').addEventListener('click', ()=> showPage('energy'));
+
+
+/* Submit */
+/*qs('btnSubmit').addEventListener('click', handleSubmit);*/
+
+function showPage(name){
+  pageInputs.classList.add('hidden');
+  pageEnergy.classList.add('hidden');
+  pageSummaryCatalog.classList.add('hidden');
+  if(name==='inputs') pageInputs.classList.remove('hidden');
+  if(name==='energy') pageEnergy.classList.remove('hidden');
+  if(name==='summaryCatalog') pageSummaryCatalog.classList.remove('hidden');
+}
+
+/* Validation */
+function validateInputs(){
+  qs('custError').classList.add('hidden');
+  const requiredText = ['custName','custEmail','custPhone','custCompany'];
+  for(let id of requiredText){
+    const el = qs(id);
+    if(!el || String(el.value).trim()===''){ qs('custError').classList.remove('hidden'); return false; }
+  }
+  const requiredNumeric = ['numCompressors','totalPower','loadFactor','hoursPerDay','daysPerYear','powerCost','currentPressure','targetPressure','specificPower','numDryers','numHeaders','drainLoss','baselineLeak','targetLeak','numDrains'];
+  for(let id of requiredNumeric){
+    const el = qs(id);
+    if(!el) { qs('custError').classList.remove('hidden'); return false; }
+    if(String(el.value).trim()===''){ qs('custError').classList.remove('hidden'); return false; }
+    if(!isFinite(parseFloat(el.value))){ qs('custError').classList.remove('hidden'); return false; }
+  }
+  return true;
+}
+
+/* =======================
+   Catalog defaults & quantities
+   ======================= */
+function initializeCatalogDefaults(){
+  // set unit costs when user hasn't chosen
+  if(qs('wafs103') && qs('wafs104')){
+    if(qs('wafs103').checked) qs('unitCostFlowSensor').value = PRICES.WAFS_103;
+    else if(qs('wafs104').checked) qs('unitCostFlowSensor').value = PRICES.WAFS_104;
+  }
+  if(!qs('unitCostDewPoint').value) qs('unitCostDewPoint').value = PRICES.WADS_201;
+  if(!qs('unitCostPressure').value) qs('unitCostPressure').value = PRICES.WAPS_501;
+  if(!qs('unitCostPowerMeter').value) qs('unitCostPowerMeter').value = PRICES.WAPM_402;
+  qs('unitCostAssessment').value = PRICES.ASSESSMENT;
+}
+
+/* Catalog quantities auto */
+function updateCatalogQuantitiesAndTotals(){
+  const numHeaders = parseFloat(qs('numHeaders').value) || 0;
+  const numDryers = parseFloat(qs('numDryers').value) || 0;
+
+  qs('qtyFlowSensor').value = numHeaders || "";
+  qs('qtyDewPoint').value = numDryers || "";
+  qs('qtyPressure').value = (numHeaders + numDryers) || "";
+  qs('qtyPowerMeter').value = numHeaders || "";
+  qs('qtyDrain').value = qs('numDrains').value || "";
+
+
+  // cloud device count: flow + dew + pressure + power (not drain)
+  const qFlow = parseFloat(qs('qtyFlowSensor').value) || 0;
+  const qDew = parseFloat(qs('qtyDewPoint').value) || 0;
+  const qPressure = parseFloat(qs('qtyPressure').value) || 0;
+  const qPower = parseFloat(qs('qtyPowerMeter').value) || 0;
+  const deviceCount = qFlow + qDew + qPressure + qPower;
+  qs('qtyCloud').value = deviceCount || 1;
+
+  // set cloud unit cost based on slab
+  let cloudRate = 0;
+  if (deviceCount < 10) cloudRate = 24000;
+  else if (deviceCount >=10 && deviceCount <=25) cloudRate = 20000;
+  else if (deviceCount >25 && deviceCount <=50) cloudRate = 12000;
+  else if (deviceCount >50 && deviceCount <=100) cloudRate = 10000;
+  else cloudRate = 10000;
+  qs('unitCostCloud').value = deviceCount>0 ? cloudRate : "";
+
+  // drain unit cost when model chosen
+  if(qs('wam80') && qs('wam425') && qs('wam850')){
+    if(qs('wam80').checked) qs('unitCostDrain').value = PRICES.WAM_80;
+    else if(qs('wam425').checked) qs('unitCostDrain').value = PRICES.WAM_425;
+    else if(qs('wam850').checked) qs('unitCostDrain').value = PRICES.WAM_850;
+  }
+
+  updateCatalogTotals();
+}
+
+/* Catalog totals */
+function updateCatalogTotals(){
+  const unitFlow = parseFloat(qs('unitCostFlowSensor').value) || 0;
+  const qtyFlow = parseFloat(qs('qtyFlowSensor').value) || 0;
+
+  const unitDew = parseFloat(qs('unitCostDewPoint').value) || 0;
+  const qtyDew = parseFloat(qs('qtyDewPoint').value) || 0;
+
+  const unitPressure = parseFloat(qs('unitCostPressure').value) || 0;
+  const qtyPressure = parseFloat(qs('qtyPressure').value) || 0;
+
+  const unitPower = parseFloat(qs('unitCostPowerMeter').value) || 0;
+  const qtyPower = parseFloat(qs('qtyPowerMeter').value) || 0;
+
+  const unitDrain = parseFloat(qs('unitCostDrain').value) || 0;
+  const qtyDrain = parseFloat(qs('qtyDrain').value) || 0; // manual
+
+  const totalFlow = unitFlow * qtyFlow;
+  const totalDew = unitDew * qtyDew;
+  const totalPressure = unitPressure * qtyPressure;
+  const totalPower = unitPower * qtyPower;
+  const totalDrain = unitDrain * qtyDrain;
+
+  qs('totalFlowSensor').textContent = totalFlow>0 ? fmtRupee(totalFlow) : "-";
+  qs('totalDewPoint').textContent = totalDew>0 ? fmtRupee(totalDew) : "-";
+  qs('totalPressure').textContent = totalPressure>0 ? fmtRupee(totalPressure) : "-";
+  qs('totalPowerMeter').textContent = totalPower>0 ? fmtRupee(totalPower) : "-";
+  qs('totalDrain').textContent = totalDrain>0 ? fmtRupee(totalDrain) : "-";
+
+  // hardware sum EXCLUDING drains (per your request)
+  const hardwareSumExclDrain = totalFlow + totalDew + totalPressure + totalPower;
+
+  // installation (5% of hardware excluding drains)
+  const installationCost = hardwareSumExclDrain > 0 ? hardwareSumExclDrain * 0.05 : 0;
+  qs('unitCostInstallation').value = installationCost>0 ? installationCost : "";
+
+  const includeAssessment = qs('includeAssessment').checked;
+  const unitAssessment = parseFloat(qs('unitCostAssessment').value) || 0;
+  const totalAssessment = includeAssessment ? unitAssessment * (parseFloat(qs('qtyAssessment').value)||1) : 0;
+  qs('totalAssessment').textContent = totalAssessment>0 ? fmtRupee(totalAssessment) : "-";
+
+  const unitCloud = parseFloat(qs('unitCostCloud').value) || 0;
+  const qtyCloud = parseFloat(qs('qtyCloud').value) || 0;
+  const totalCloud = unitCloud * qtyCloud;
+  qs('totalCloud').textContent = totalCloud>0 ? fmtRupee(totalCloud) : "-";
+
+  qs('totalInstallation').textContent = installationCost>0 ? fmtRupee(installationCost) : "-";
+
+  // CAPEX uses hardwareSumExclDrain + installation + assessment (drains excluded)
+  const capex = hardwareSumExclDrain + installationCost + totalAssessment;
+  qs('catalogCapex').textContent = capex>0 ? fmtRupee(capex) : "-";
+
+  const opex = totalCloud>0 ? totalCloud : 0;
+  qs('catalogOpex').textContent = opex>0 ? fmtRupee(opex) : "-";
+
+  const totalInvestment = capex + opex;
+  qs('catalogTotalInvestment').textContent = totalInvestment>0 ? fmtRupee(totalInvestment) : "-";
+
+  // store numeric values for summary
+  qs('catalogCapex').dataset.value = capex || 0;
+  qs('catalogOpex').dataset.value = opex || 0;
+  qs('catalogTotalInvestment').dataset.value = totalInvestment || 0;
+}
+
+/* Wire model radios */
+if(qs('wafs103')) qs('wafs103').addEventListener('change', ()=> { qs('unitCostFlowSensor').value = PRICES.WAFS_103; updateCatalogQuantitiesAndTotals(); });
+if(qs('wafs104')) qs('wafs104').addEventListener('change', ()=> { qs('unitCostFlowSensor').value = PRICES.WAFS_104; updateCatalogQuantitiesAndTotals(); });
+
+['wam80','wam425','wam850'].forEach(id=>{
+  if(qs(id)) qs(id).addEventListener('change', ()=> { updateCatalogQuantitiesAndTotals(); updateCatalogTotals(); });
+});
+qs('includeAssessment') && qs('includeAssessment').addEventListener('change', ()=> updateCatalogTotals());
+
+/* Attach input listeners to recalc live */
+['numCompressors','totalPower','loadFactor','hoursPerDay','daysPerYear','powerCost','currentPressure','targetPressure','specificPower','baselineLeak','targetLeak','numDrains','drainLoss','numDryers','numHeaders','qtyDrain'].forEach(id=>{
+  if(qs(id)) qs(id).addEventListener('input', ()=> {
+    qs('custError') && qs('custError').classList.add('hidden');
+    // estimated flow auto update only when manual not set
+    if(!estimatedFlowManual) computeAndSetEstimatedFlow();
+    updateCatalogQuantitiesAndTotals();
+    updateCatalogTotals();
+    calculateEnergy();
+    updateSummaryValues();
+  });
+});
+
+/* Estimated Flow manual override behaviour (B1) */
+qs('estimatedFlow').addEventListener('input', (e)=>{
+  const val = e.target.value;
+  if(String(val).trim() === ""){
+    // user cleared -> resume auto
+    estimatedFlowManual = false;
+    computeAndSetEstimatedFlow();
+  } else {
+    // user manually set -> lock manual override
+    estimatedFlowManual = true;
+    // reflect in UI table too
+    qs('estFlow').innerText = fmtNum(parseFloat(val) || 0,2);
+    calculateEnergy();
+    updateCatalogQuantitiesAndTotals();
+    updateCatalogTotals();
+    updateSummaryValues();
+  }
+});
+
+/* If unit costs change recalc */
+['unitCostFlowSensor','unitCostDewPoint','unitCostPressure','unitCostPowerMeter','unitCostDrain','unitCostCloud','unitCostInstallation','unitCostAssessment'].forEach(id=>{
+  if(qs(id)) qs(id).addEventListener('input', ()=> { updateCatalogTotals(); calculateEnergy(); updateSummaryValues(); });
+});
+
+/* =======================
+   ENERGY CALCULATIONS
+   ======================= */
+function computeAndSetEstimatedFlow(){
+  // per your request: Estimated Flow = totalPower / specificPower (if available)
+  const totalPower = parseFloat(qs('totalPower').value);
+  const specificPower = parseFloat(qs('specificPower').value);
+  if(isFinite(totalPower) && isFinite(specificPower) && specificPower > 0){
+    const est = totalPower / specificPower;
+    qs('estimatedFlow').value = est ? Math.round(est*100)/100 : "";
+    qs('estFlow').innerText = fmtNum(est,2);
+  } else {
+    // clear if cannot compute
+    // do not clear if user manually set
+    if(!estimatedFlowManual) { qs('estimatedFlow').value = ""; qs('estFlow').innerText = fmtNum(0,2); }
+  }
+}
+
+function calculateEnergy(){
+  // read inputs safely
+  const totalPower = parseFloat(qs('totalPower').value) || 0; // installed kW
+  const loadFactorPct = parseFloat(qs('loadFactor').value) || 0;
+  const loadFactor = loadFactorPct / 100;
+  const hoursPerDay = parseFloat(qs('hoursPerDay').value) || 0;
+  const daysPerYear = parseFloat(qs('daysPerYear').value) || 0;
+  const powerCost = parseFloat(qs('powerCost').value) || 0;
+  const currentPressure = parseFloat(qs('currentPressure').value) || 0;
+  const targetPressure = parseFloat(qs('targetPressure').value) || 0;
+  const specificPower = parseFloat(qs('specificPower').value) || 0;
+  const baselineLeak = parseFloat(qs('baselineLeak').value) || 0;
+  const targetLeak = parseFloat(qs('targetLeak').value) || 0;
+  const numDrains = parseFloat(qs('numDrains').value) || 0;
+  const drainLoss = parseFloat(qs('drainLoss').value) || 0;
+
+  // baseline kWh/day = installed kW * load factor * hours/day
+  const baseline_kWh_day = totalPower * loadFactor * hoursPerDay;
+  const baseline_kW_avg = (hoursPerDay>0) ? baseline_kWh_day / hoursPerDay : 0;
+
+  // estimated flow: honor manual override (B1), otherwise compute totalPower / specificPower * loadFactor
+  let estimatedFlow = null;
+  if(estimatedFlowManual && qs('estimatedFlow').value.trim() !== "") {
+    estimatedFlow = parseFloat(qs('estimatedFlow').value) || 0;
+  } else {
+    if(specificPower > 0) estimatedFlow = (totalPower / specificPower)* loadFactor;
+    else estimatedFlow = 0;
+    // reflect auto into field if not manual
+    if(!estimatedFlowManual) {
+      qs('estimatedFlow').value = isFinite(estimatedFlow) ? Math.round(estimatedFlow*100)/100 : "";
+    }
+  }
+
+  // pressure saving
+  const pressureReduction = currentPressure - targetPressure;
+  const pressureSavingPct = pressureReduction * 0.07; // fraction per bar rule-of-thumb
+  const pressureSavings_kWh_day = baseline_kWh_day * pressureSavingPct;
+
+  // leak reduction
+  const leakReductionFraction = ((baselineLeak - targetLeak)/100) || 0;
+  const leakFlowSaved = estimatedFlow * leakReductionFraction;
+  const leakSavings_kWh_day = leakFlowSaved * (specificPower || 0) * (hoursPerDay || 0);
+
+  // drain savings (drainLoss * number drains) — energy saving side still considered
+  const drainFlowSaved = numDrains * drainLoss;
+  const drainSavings_kWh_day = drainFlowSaved * (specificPower || 0) * (hoursPerDay || 0);
+
+  // totals
+  const totalSavings_kWh_day = pressureSavings_kWh_day + leakSavings_kWh_day + drainSavings_kWh_day;
+  const savings_kWh_month = totalSavings_kWh_day * 30;
+  const savings_kWh_year = totalSavings_kWh_day * daysPerYear;
+
+  const costSavings_day = totalSavings_kWh_day * powerCost;
+  const costSavings_month = costSavings_day * 30;
+  const costSavings_year = costSavings_day * daysPerYear;
+
+  // populate UI
+  qs('baselineCalc').innerText = fmtNum(baseline_kWh_day,2);
+  qs('baselineKW').innerText = fmtNum(baseline_kW_avg,2);
+  qs('estFlow').innerText = fmtNum(estimatedFlow,2);
+  qs('pressureRed').innerText = fmtNum(pressureReduction,2);
+  qs('pressureSavingPct').innerText = (pressureSavingPct*100).toFixed(2) + "%";
+  qs('pressureSavingKWh').innerText = fmtNum(pressureSavings_kWh_day,2);
+  qs('leakReduction').innerText = (leakReductionFraction*100).toFixed(2) + "%";
+  qs('leakFlowSaved').innerText = fmtNum(leakFlowSaved,2);
+  qs('leakSavings').innerText = fmtNum(leakSavings_kWh_day,2);
+  qs('drainFlowSaved').innerText = fmtNum(drainFlowSaved,2);
+  qs('drainSavings').innerText = fmtNum(drainSavings_kWh_day,2);
+
+  qs('totalSavingsDay').innerText = fmtNum(totalSavings_kWh_day,2);
+  qs('totalSavingsMonth').innerText = fmtNum(savings_kWh_month,2);
+  qs('totalSavingsYear').innerText = fmtNum(savings_kWh_year,2);
+
+  qs('costSavingsDay').innerText = fmtRupee(costSavings_day);
+  qs('costSavingsMonth').innerText = fmtRupee(costSavings_month);
+  qs('costSavingsYear').innerText = fmtRupee(costSavings_year);
+
+  // store numeric for summary
+  qs('costSavingsYear').dataset.value = costSavings_year || 0;
+  qs('costSavingsDay').dataset.value = costSavings_day || 0;
+}
+
+/* =======================
+   Update Summary values & ROI
+   ======================= */
+function updateSummaryValues(){
+  const capex = parseFloat(qs('catalogCapex').dataset.value) || 0;
+  const opex = parseFloat(qs('catalogOpex').dataset.value) || 0;
+  const totalInvestment = parseFloat(qs('catalogTotalInvestment').dataset.value) || (capex + opex);
+
+  // annual energy cost saving (from energy calc)
+  const costSavingsYear = parseFloat(qs('costSavingsYear').dataset.value) || 0;
+
+  // Year nets per your request:
+  const year1Net = costSavingsYear - totalInvestment; // Year1 considers CAPEX
+  const year2Net = year1Net + costSavingsYear;
+
+  const netAnnualSavingsAfterOpex = costSavingsYear - opex; // for simple ROI
+
+  qs('outCapex').innerText = capex>0 ? fmtRupee(capex) : "₹0.00";
+  qs('outOpex').innerText = opex>0 ? fmtRupee(opex) : "₹0.00";
+  qs('outTotalInvestment').innerText = totalInvestment>0 ? fmtRupee(totalInvestment) : "₹0.00";
+  qs('outAnnualSavings').innerText = costSavingsYear>0 ? fmtRupee(costSavingsYear) : "₹0.00";
+  qs('outYear1').innerText = fmtRupee(year1Net);
+  qs('outYear2').innerText = fmtRupee(year2Net);
+
+  // payback (years) = TotalInvestment / AnnualSavings (before OpEx), if savings>0
+  let payback = "-";
+  if(costSavingsYear > 0 && totalInvestment>0){
+    const pbYears = totalInvestment / costSavingsYear;
+    payback = pbYears.toFixed(2) + " years";
+  }
+  qs('outPayback').innerText = payback;
+
+  // simple ROI: Net annual savings (after OPEX) / CAPEX
+  let roi = "-";
+  if(capex > 0){
+    roi = ((netAnnualSavingsAfterOpex / capex) * 100).toFixed(2) + "%";
+  }
+  qs('outROI').innerText = roi;
+}
+
+
+
+
+/* =======================
+   Submission to Google Sheets
+   ======================= */
+async function handleSubmit(){
+  if(!validateInputs()){ alert("Please complete all mandatory fields first."); showPage('inputs'); return; }
+  // ensure latest values
+  if(!estimatedFlowManual) computeAndSetEstimatedFlow();
+  updateCatalogQuantitiesAndTotals();
+  updateCatalogTotals();
+  calculateEnergy();
+  updateSummaryValues();
+
+  // assemble payload — include all catalog items + energy + customer fields
+  const payload = {
+    timestamp: new Date().toISOString(),
+    name: qs('custName').value.trim(),
+    email: qs('custEmail').value.trim(),
+    phone: qs('custPhone').value.trim(),
+    company: qs('custCompany').value.trim(),
+
+    numCompressors: Number(qs('numCompressors').value) || 0,
+    totalPower: Number(qs('totalPower').value) || 0,
+    loadFactor: Number(qs('loadFactor').value) || 0,
+    hoursPerDay: Number(qs('hoursPerDay').value) || 0,
+    daysPerYear: Number(qs('daysPerYear').value) || 0,
+    powerCost: Number(qs('powerCost').value) || 0,
+    currentPressure: Number(qs('currentPressure').value) || 0,
+    targetPressure: Number(qs('targetPressure').value) || 0,
+    specificPower: Number(qs('specificPower').value) || 0,
+    estimatedFlow: Number(qs('estimatedFlow').value) || 0,
+    baselineLeak: Number(qs('baselineLeak').value) || 0,
+    targetLeak: Number(qs('targetLeak').value) || 0,
+    numDrains: Number(qs('numDrains').value) || 0,
+    drainLoss: Number(qs('drainLoss').value) || 0,
+    numDryers: Number(qs('numDryers').value) || 0,
+    numHeaders: Number(qs('numHeaders').value) || 0,
+
+    // catalog details
+    flowModel: (qs('wafs103')&&qs('wafs103').checked)?'WAFS-103':(qs('wafs104')&&qs('wafs104').checked)?'WAFS-104':null,
+    unitCostFlowSensor: Number(qs('unitCostFlowSensor').value) || 0,
+    qtyFlowSensor: Number(qs('qtyFlowSensor').value) || 0,
+    totalFlowSensor: qs('totalFlowSensor').textContent || "-",
+
+    unitCostDewPoint: Number(qs('unitCostDewPoint').value) || 0,
+    qtyDewPoint: Number(qs('qtyDewPoint').value) || 0,
+    totalDewPoint: qs('totalDewPoint').textContent || "-",
+
+    unitCostPressure: Number(qs('unitCostPressure').value) || 0,
+    qtyPressure: Number(qs('qtyPressure').value) || 0,
+    totalPressure: qs('totalPressure').textContent || "-",
+
+    unitCostPowerMeter: Number(qs('unitCostPowerMeter').value) || 0,
+    qtyPowerMeter: Number(qs('qtyPowerMeter').value) || 0,
+    totalPowerMeter: qs('totalPowerMeter').textContent || "-",
+
+    drainModel: (qs('wam80')&&qs('wam80').checked)?'WAM-80':(qs('wam425')&&qs('wam425').checked)?'WAM-425':(qs('wam850')&&qs('wam850').checked)?'WAM-850':null,
+    unitCostDrain: Number(qs('unitCostDrain').value) || 0,
+    qtyDrain: Number(qs('qtyDrain').value) || 0,
+    totalDrain: qs('totalDrain').textContent || "-",
+
+    unitCostCloud: Number(qs('unitCostCloud').value) || 0,
+    qtyCloud: Number(qs('qtyCloud').value) || 0,
+    totalCloud: qs('totalCloud').textContent || "-",
+
+    unitCostInstallation: Number(qs('unitCostInstallation').value) || 0,
+    totalInstallation: qs('totalInstallation').textContent || "-",
+
+    includeAssessment: qs('includeAssessment').checked,
+    unitCostAssessment: Number(qs('unitCostAssessment').value) || 0,
+    totalAssessment: qs('totalAssessment').textContent || "-",
+
+    catalogCapex: Number(qs('catalogCapex').dataset.value) || 0,
+    catalogOpex: Number(qs('catalogOpex').dataset.value) || 0,
+    catalogTotalInvestment: Number(qs('catalogTotalInvestment').dataset.value) || 0,
+
+    // energy outputs
+    baseline_kWh_day: qs('baselineCalc').innerText || "0",
+    baseline_kW_avg: qs('baselineKW').innerText || "0",
+    estFlow_display: qs('estFlow').innerText || "0",
+    pressureReduction: qs('pressureRed').innerText || "0",
+    pressureSavingPct: qs('pressureSavingPct').innerText || "0",
+    pressureSavingKWh: qs('pressureSavingKWh').innerText || "0",
+    leakReductionPct: qs('leakReduction').innerText || "0",
+    leakFlowSaved: qs('leakFlowSaved').innerText || "0",
+    leakSavings_kWh_day: qs('leakSavings').innerText || "0",
+    drainFlowSaved: qs('drainFlowSaved').innerText || "0",
+    drainSavings_kWh_day: qs('drainSavings').innerText || "0",
+    totalSavingsDay: qs('totalSavingsDay').innerText || "0",
+    totalSavingsMonth: qs('totalSavingsMonth').innerText || "0",
+    totalSavingsYear: qs('totalSavingsYear').innerText || "0",
+    costSavingsDay: qs('costSavingsDay').innerText || "0",
+    costSavingsMonth: qs('costSavingsMonth').innerText || "0",
+    costSavingsYear: qs('costSavingsYear').innerText || "0",
+
+    outCapex: qs('outCapex').innerText || "0",
+    outOpex: qs('outOpex').innerText || "0",
+    outTotalInvestment: qs('outTotalInvestment').innerText || "0",
+    outAnnualSavings: qs('outAnnualSavings').innerText || "0",
+    outYear1: qs('outYear1').innerText || "0",
+    outYear2: qs('outYear2').innerText || "0",
+    outPayback: qs('outPayback').innerText || "-",
+    outROI: qs('outROI').innerText || "-"
+  };
+
+  qs('btnSubmit').disabled = true;
+  qs('btnSubmit').innerText = "Saving...";
+
+  try{
+    const res = await fetch(GOOGLE_SHEET_WEBHOOK, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    const j = await res.json().catch(()=>null);
+    if(j && (j.result==="success" || j.status==="success" || j.status==="ok")){
+      alert("Saved successfully to Google Sheets.");
+    } else {
+      alert("Saved (check sheet). Response: " + JSON.stringify(j));
+    }
+  } catch(err){
+    console.error(err);
+    alert("Error saving: " + (err.message||err));
+  } finally{
+    qs('btnSubmit').disabled = false;
+    qs('btnSubmit').innerText = "Submit & download PDF";
+  }
+
+}
+
+/* =======================
+   Initialization
+   ======================= */
+(function init(){
+  // defaults
+  
+  qs('qtyCloud').value = 1;
+  qs('qtyInstallation').value = 1;
+  qs('qtyAssessment').value = 1;
+  // show inputs page
+  showPage('inputs');
+  // compute initial values
+  computeAndSetEstimatedFlow();
+  updateCatalogQuantitiesAndTotals();
+  updateCatalogTotals();
+  calculateEnergy();
+  updateSummaryValues();
+
+
+
+
+/* =======================
+   LOCAL MAIL (NO SERVER)
+   ======================= */
+
+const OWNER_EMAIL = "data.analyst@wiseair.asia";
+
+qs('btnSubmit').addEventListener('click', function (e) {
+  e.preventDefault();
+  sendSummaryMail();
+});
+
+function sendSummaryMail() {
+
+  /* CUSTOMER DETAILS */
+  const customerName  = qs("custName").value;
+  const customerEmail = qs("custEmail").value;
+  const company       = qs("custCompany").value;
+  const phone         = qs("custPhone").value;
+
+  if(!customerEmail){
+    alert("Customer email is required");
+    return;
+  }
+
+  /* SYSTEM DETAILS */
+  const headers = qs("numHeaders").value;
+  const dryers  = qs("numDryers").value;
+  const drains  = qs("numDrains").value;
+  const estFlow = qs("estFlow").innerText;
+  const pressureNow = qs("currentPressure").value;
+  const pressureTarget = qs("targetPressure").value;
+
+  /* SUMMARY */
+  const capex         = qs("outCapex").innerText;
+  const opex          = qs("outOpex").innerText;
+  const investment    = qs("outTotalInvestment").innerText;
+  const annualSavings = qs("outAnnualSavings").innerText;
+  const payback       = qs("outPayback").innerText;
+  const roi           = qs("outROI").innerText;
+
+  /* ENERGY & SAVINGS VALUES (FROM TABLE) */
+  const e1  = qs("baselineCalc").innerText;
+  const e2  = qs("baselineKW").innerText;
+  const e3  = qs("estFlow").innerText;
+  const e4  = qs("pressureRed").innerText;
+  const e5  = qs("pressureSavingPct").innerText;
+  const e6  = qs("pressureSavingKWh").innerText;
+  const e7  = qs("leakReduction").innerText;
+  const e8  = qs("leakFlowSaved").innerText;
+  const e9  = qs("leakSavings").innerText;
+  const e10 = qs("drainFlowSaved").innerText;
+  const e11 = qs("drainSavings").innerText;
+  const e12 = qs("totalSavingsDay").innerText;
+  const e13 = qs("totalSavingsMonth").innerText;
+  const e14 = qs("totalSavingsYear").innerText;
+  const e15 = qs("costSavingsDay").innerText;
+  const e16 = qs("costSavingsMonth").innerText;
+  const e17 = qs("costSavingsYear").innerText;
+
+
+  const subject = encodeURIComponent("WISEAIR – Summary & ROI Report");
+
+  const body = encodeURIComponent(`
+WISEAIR – COMPRESSED AIR SAVINGS REPORT
+
+CUSTOMER DETAILS
+----------------
+Name    : ${customerName}
+Company : ${company}
+Phone   : ${phone}
+Email   : ${customerEmail}
+
+SYSTEM SUMMARY
+--------------
+Main Headers        : ${headers}
+Dryers              : ${dryers}
+Drains              : ${drains}
+Estimated Flow CFM  : ${estFlow}
+Current Pressure    : ${pressureNow} bar
+Target Pressure     : ${pressureTarget} bar
+
+
+ENERGY & SAVINGS (AUTO CALCULATED)
+---------------------------------
+1. Baseline Energy (kWh/day)           : ${e1}
+2. Baseline Average Load (kW)          : ${e2}
+3. Estimated Flow (CFM)                : ${e3}
+4. Pressure Reduction (bar)            : ${e4}
+5. Pressure Optimization Saving (%)    : ${e5}
+6. Pressure Savings (kWh/day)          : ${e6}
+7. Leak Reduction (%)                  : ${e7}
+8. Leak Flow Saved (CFM)               : ${e8}
+9. Leak Savings (kWh/day)              : ${e9}
+10. Drain Flow Saved (CFM)             : ${e10}
+11. Drain Savings (kWh/day)            : ${e11}
+12. Total Savings (kWh/day)            : ${e12}
+13. Total Savings (kWh/month)          : ${e13}
+14. Total Savings (kWh/year)           : ${e14}
+15. Energy Cost Savings (₹/day)        : ${e15}
+16. Energy Cost Savings (₹/month)      : ${e16}
+17. Energy Cost Savings (₹/year)       : ${e17}
+
+
+SUMMARY & ROI
+-------------
+CAPEX               : ${capex}
+OPEX (Annual)       : ${opex}
+Total Investment    : ${investment}
+
+Annual Savings      : ${annualSavings}
+Payback             : ${payback}
+ROI                 : ${roi}
+
+
+Generated using WISEAIR ROI Simulator
+`);
+
+  window.location.href =
+    `mailto:${customerEmail}` +
+    `?bcc=${OWNER_EMAIL}` +
+    `&subject=${subject}` +
+    `&body=${body}`;
+}
+
+
+})();
+</script>
+</body>
+</html>
