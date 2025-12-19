@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leakage Cost & Pressure Reduction Savings</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #9dd3af;
+  margin: 20px;
+  color: #737373;
+}
+h1 { text-align:center; font-weight:bold; }
+.container { display:flex; gap:20px; flex-wrap:wrap; }
+.section {
+  background:#fff;
+  flex:1;
+  min-width:350px;
+  padding:20px;
+  border-radius:10px;
+  border-left:6px solid #737373;
+  box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+label { display:block; margin-top:10px; font-weight:bold; }
+.subtext { font-size:13px; }
+input, select {
+  padding:7px;
+  width:90%;
+  border:1px solid #737373;
+  border-radius:4px;
+}
+button {
+  margin-top:15px;
+  padding:10px;
+  background:#737373;
+  color:#fff;
+  border:none;
+  border-radius:5px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.output {
+  background:#e8f5eb;
+  padding:15px;
+  border-radius:8px;
+  margin-top:15px;
+  font-weight:bold;
+}
+.cta-area { margin-top:30px; text-align:center; display:none; }
+.cta-text, .cta-btn {
+  background:#737373;
+  color:white;
+  padding:15px;
+  border-radius:8px;
+  margin:10px;
+  cursor:pointer;
+  font-weight:bold;
+}
+.cta-btn { display:none; }
+</style>
+</head>
+
+<body>
+
+<h1>Essential Compressed Air Tools Offered by Systel</h1>
+<h1>Leakage Cost & Pressure Reduction Savings</h1>
+
+<div class="container">
+
+<!-- LEAKAGE SECTION -->
+<div class="section">
+<h2>Leakage Cost</h2>
+
+<label>Compressor Capacity</label>
+<input type="number" id="fad">
+<select id="fadUnit">
+  <option value="CFM">CFM</option>
+  <option value="m3min">m³/min</option>
+  <option value="m3h">m³/h</option>
+</select>
+
+<label>Leakage %</label>
+<div class="subtext">(0–100%)</div>
+<input type="number" id="leakPercent">
+
+<label>Specific Power (kW / CFM)</label>
+<input type="number" step="0.01" id="specificPower">
+
+<label>Operating Hours / Year</label>
+<input type="number" id="hoursYear">
+
+<label>Tariff (₹ / kWh)</label>
+<input type="number" id="tariff">
+
+<button onclick="calculateLeakage()">Calculate Leakage Cost</button>
+<div id="leakOutput" class="output"></div>
+</div>
+
+<!-- PRESSURE SECTION -->
+<div class="section">
+<h2>Pressure Reduction Savings</h2>
+
+<label>Current Pressure (bar)</label>
+<input type="number" step="0.1" id="currentPressure">
+
+<label>Target Pressure (bar)</label>
+<input type="number" step="0.1" id="targetPressure">
+
+<label>Baseline Annual Cost (₹)</label>
+<input type="number" id="baselineCost" readonly>
+
+<label>Savings % (Auto)</label>
+<input type="number" id="savingPerBar" readonly>
+
+<button onclick="calculatePressure()">Calculate Pressure Savings</button>
+<div id="pressureOutput" class="output"></div>
+</div>
+
+</div>
+
+<!-- CTA -->
+<div class="cta-area" id="ctaMain">
+  <div class="cta-text" onclick="showContactOptions()">
+    💰 Want to reduce your compressor energy cost? Contact Systel Energy Solutions
+  </div>
+  <div class="cta-btn" id="callBtn" onclick="window.location.href='tel:9843145445'">📞 Call</div>
+  <div class="cta-btn" id="mailBtn" onclick="window.location.href='mailto:support@systel.asia'">✉️ Email</div>
+</div>
+
+<script>
+/* ROUND TO WHOLE NUMBER */
+function noDec(x){ return Math.round(x); }
+
+/* CONVERT CAPACITY TO CFM */
+function getFadCFM(){
+  let fad = +fadInput.value;
+  if(fadUnit.value==="m3min") fad *= 35.3147;
+  if(fadUnit.value==="m3h") fad = fad * 35.3147 / 60;
+  return fad;
+}
+
+/* AUTO BASELINE ANNUAL COST */
+function autoBaseline(){
+  const fadCFM = getFadCFM();
+  const sp = +specificPower.value;
+  const hrs = +hoursYear.value;
+  const tariff = +tariffInput.value;
+
+  if(!fadCFM || !sp || !hrs || !tariff){
+    baselineCost.value = "";
+    return;
+  }
+
+  const powerKW = fadCFM * sp;
+  const annualCost = powerKW * hrs * tariff;
+  baselineCost.value = noDec(annualCost);
+}
+
+/* AUTO UPDATE LISTENERS */
+["fad","specificPower","hoursYear","tariff","fadUnit"]
+.forEach(id => document.getElementById(id).addEventListener("input", autoBaseline));
+
+/* LEAKAGE COST */
+function calculateLeakage(){
+  const leakPct = +leakPercent.value / 100;
+  const sp = +specificPower.value;
+  const hrs = +hoursYear.value;
+  const tariff = +tariffInput.value;
+
+  const fadCFM = getFadCFM();
+  const leakFlow = fadCFM * leakPct;
+  const leakPower = leakFlow * sp;
+
+  const dailyEnergy = leakPower * (hrs / 365);
+  const monthlyEnergy = dailyEnergy * 30;
+  const annualEnergy = dailyEnergy * 365;
+
+  leakOutput.innerHTML = `
+    Leak Flow: ${noDec(leakFlow)} CFM<br>
+    Leak Power: ${noDec(leakPower)} kW<hr>
+    Daily Energy Waste: ${noDec(dailyEnergy)} kWh/day<br>
+    Monthly Energy Waste: ${noDec(monthlyEnergy)} kWh/month<br>
+    Annual Energy Waste: ${noDec(annualEnergy)} kWh/year<hr>
+    Daily Cost of Leaks: ₹${noDec(dailyEnergy * tariff)}<br>
+    Monthly Cost of Leaks: ₹${noDec(monthlyEnergy * tariff)}<br>
+    Annual Cost of Leaks: ₹${noDec(annualEnergy * tariff)}
+  `;
+  ctaMain.style.display="block";
+}
+
+/* PRESSURE REDUCTION SAVINGS */
+function calculatePressure(){
+  const cur = +currentPressure.value;
+  const tar = +targetPressure.value;
+
+  if(tar >= cur){
+    alert("Target pressure must be lower than current pressure");
+    return;
+  }
+
+  const fadCFM = getFadCFM();
+  const sp = +specificPower.value;
+  const tariff = +tariffInput.value;
+
+  const deltaP = cur - tar;
+  const savingPct = deltaP * 5;   // 5% per bar
+  savingPerBar.value = noDec(savingPct);
+
+  const dailySavings =
+    fadCFM * sp * 24 * (savingPct / 100) * tariff;
+
+  const monthlySavings = dailySavings * 30;
+  const yearlySavings  = dailySavings * 365;
+
+  pressureOutput.innerHTML = `
+    Pressure Difference: ${noDec(deltaP)} bar<br>
+    Estimated Savings: ${noDec(savingPct)}%<hr>
+    Pressure reduction of ${noDec(deltaP)} bar saves approximately ${noDec(savingPct)}% of daily energy cost<hr>
+    Daily Estimated Power Savings: ₹${noDec(dailySavings)}<br>
+    Monthly Estimated Power Savings: ₹${noDec(monthlySavings)}<br>
+    Yearly Estimated Power Savings: ₹${noDec(yearlySavings)}
+  `;
+  ctaMain.style.display="block";
+}
+
+function showContactOptions(){
+  callBtn.style.display="inline-block";
+  mailBtn.style.display="inline-block";
+}
+
+/* SHORTCUTS */
+const fadInput = document.getElementById("fad");
+const fadUnit = document.getElementById("fadUnit");
+const specificPower = document.getElementById("specificPower");
+const hoursYear = document.getElementById("hoursYear");
+const tariffInput = document.getElementById("tariff");
+const leakPercent = document.getElementById("leakPercent");
+const leakOutput = document.getElementById("leakOutput");
+const pressureOutput = document.getElementById("pressureOutput");
+const baselineCost = document.getElementById("baselineCost");
+</script>
+
+</body>
+</html>
