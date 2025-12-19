@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Isentropic Efficiency Calculator</title>
+
+<style>
+:root{
+  --green:#9dd3af;
+  --grey:#4b5563;
+  --bg:#ffffff;
+}
+body{
+  font-family:Arial, Helvetica, sans-serif;
+  background:var(--green);
+  margin:0;
+  padding:30px;
+}
+.container{
+  max-width:800px;
+  margin:auto;
+  background:var(--bg);
+  padding:24px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.12);
+}
+h1{
+  text-align:center;
+  color:var(--grey);
+}
+.card{
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:18px;
+  margin-top:20px;
+  background:#f9fafb;
+}
+.row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:14px;
+}
+label{
+  font-size:14px;
+  font-weight:600;
+}
+input, button{
+  width:100%;
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #d1d5db;
+}
+button{
+  background:#16a34a;
+  color:white;
+  border:none;
+  font-size:16px;
+  cursor:pointer;
+  margin-top:14px;
+}
+button:hover{background:#15803d;}
+.result{
+  margin-top:18px;
+  font-weight:600;
+}
+.note{
+  margin-top:12px;
+  font-size:13px;
+  color:#555;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>Essential Compressed Air Tools Offered by Systel</h1>
+<h1>Isentropic Efficiency Calculator</h1>
+
+
+<div class="card">
+<div class="row">
+  <div>
+    <label>Free Air Flow (SCFM)</label>
+    <input type="number" id="scfm" placeholder="">
+  </div>
+  <div>
+    <label>Inlet Pressure (bar abs)</label>
+    <input type="number" id="p1" placeholder="">
+  </div>
+  <div>
+    <label>Discharge Pressure (bar abs)</label>
+    <input type="number" id="p2" placeholder="">
+  </div>
+  <div>
+    <label>Inlet Temperature (°C)</label>
+    <input type="number" id="t1" placeholder="">
+  </div>
+  <div>
+    <label>Actual Compressor Power (kW)</label>
+    <input type="number" id="p_actual" placeholder="">
+  </div>
+</div>
+
+<button onclick="calculate()">Calculate Isentropic Efficiency</button>
+
+<div class="result" id="result"></div>
+
+<div class="note">
+Simplified ideal-gas isentropic model for air (k = 1.4).  
+Use for benchmarking and comparative analysis only.
+</div>
+</div>
+
+</div>
+
+<script>
+function calculate(){
+  const k = 1.4;
+
+  const scfm = parseFloat(document.getElementById("scfm").value);
+  const p1 = parseFloat(document.getElementById("p1").value); // bar abs
+  const p2 = parseFloat(document.getElementById("p2").value); // bar abs
+  const t1C = parseFloat(document.getElementById("t1").value);
+  const pActual = parseFloat(document.getElementById("p_actual").value);
+
+  if([scfm,p1,p2,t1C,pActual].some(isNaN)){
+    alert("Please fill all inputs");
+    return;
+  }
+
+  // Convert inlet temperature to Kelvin
+  const T1 = t1C + 273.15;
+
+  // Convert SCFM → ACFM at inlet
+  const ACFM = scfm * (1.013 / p1) * (T1 / 288.15);
+
+  // Convert ACFM → m³/s
+  const Q = ACFM * 0.0283168466 / 60;
+
+  // Isentropic power (kW)
+  const P_is = (k/(k-1)) * p1 * 100000 * Q *
+    (Math.pow(p2/p1, (k-1)/k) - 1) / 1000;
+
+  // Isentropic efficiency
+  const eta = (P_is / pActual) * 100;
+
+  document.getElementById("result").innerHTML = `
+    Inlet ACFM: ${ACFM.toFixed(1)}<br>
+    Isentropic Power: ${P_is.toFixed(2)} kW<br>
+    <strong>Isentropic Efficiency: ${eta.toFixed(1)} %</strong>
+  `;
+}
+</script>
+
+</body>
+</html>

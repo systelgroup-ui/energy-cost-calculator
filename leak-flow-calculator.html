@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leak Noise vs Leak Size Tool</title>
+
+<style>
+:root{
+  --green:#9dd3af;
+  --dark:#374151;
+  --card:#ffffff;
+}
+body{
+  font-family:Arial, Helvetica, sans-serif;
+  background:var(--green);
+  margin:0;
+  padding:20px;
+}
+.container{
+  max-width:900px;
+  margin:auto;
+}
+.card{
+  background:var(--card);
+  padding:26px;
+  border-radius:14px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.15);
+}
+h1{
+  text-align:center;
+  color:var(--dark);
+  margin-bottom:8px;
+}
+.subtitle{
+  text-align:center;
+  color:#555;
+  margin-bottom:20px;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:18px;
+}
+.form-group label{
+  font-weight:600;
+  margin-bottom:6px;
+  display:block;
+}
+.form-group input,
+.form-group select{
+  width:100%;
+  padding:8px;
+  border:1px solid #ccc;
+  border-radius:6px;
+}
+button{
+  margin-top:22px;
+  background:#2fbf71;
+  color:#fff;
+  border:none;
+  padding:12px 24px;
+  font-size:16px;
+  border-radius:8px;
+  cursor:pointer;
+}
+button:hover{
+  background:#23965a;
+}
+.results{
+  margin-top:26px;
+  background:#f9fafb;
+  padding:18px;
+  border-radius:10px;
+}
+.results h2{
+  margin-top:0;
+  color:var(--dark);
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+th, td{
+  border:1px solid #ddd;
+  padding:8px;
+  text-align:center;
+}
+th{
+  background:#eef7f0;
+}
+.note{
+  margin-top:14px;
+  font-size:14px;
+  color:#555;
+}
+.highlight{
+  font-weight:bold;
+}
+.cta-btn{
+  margin-top:12px;
+  background:#2fbf71;
+  color:#fff;
+  padding:12px;
+  border-radius:8px;
+  text-align:center;
+  font-weight:bold;
+  cursor:pointer;
+}
+.cta-btn:hover{
+  background:#23965a;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <div class="card">
+
+    <h1>Essential Compressed Air Tools Offered by Systel</h1>
+    <h1>Leak Flow Estimation Tool</h1>
+
+    <p class="subtitle">
+      Quick estimate of compressed air leakage impact based on leak size and system pressure
+    </p>
+
+    <div class="grid">
+
+      <div class="form-group">
+        <label>System Pressure (bar)</label>
+        <input type="number" id="pressure" step="0.1">
+      </div>
+
+      <div class="form-group">
+        <label>Leak Size (Orifice Diameter)</label>
+        <select id="leakSize">
+          <option value="">Select size</option>
+          <option value="1">Very Small (~1 mm)</option>
+          <option value="2">Small (~2 mm)</option>
+          <option value="3">Medium (~3 mm)</option>
+          <option value="4">Large (~4 mm)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Operating Days/ Year</label>
+        <input type="number" id="days">
+      </div>
+
+      <div class="form-group">
+        <label>Specific Power (kW per CFM)</label>
+        <input type="number" id="sp" step="0.01">
+      </div>
+
+      <div class="form-group">
+        <label>Electricity Tariff (₹ / kWh)</label>
+        <input type="number" id="tariff" step="0.1">
+      </div>
+
+    </div>
+
+    <button onclick="calculate()">Estimate Leak Impact</button>
+
+    <div class="results" id="output" style="display:none;">
+      <h2>Estimated Leak Impact</h2>
+
+      <table>
+        <tr>
+          <th>Parameter</th>
+          <th>Value</th>
+        </tr>
+        <tr>
+          <td>Estimated Leak Flow</td>
+          <td><span id="qLeak"></span> CFM</td>
+        </tr>
+        <tr>
+          <td>Leak Power</td>
+          <td><span id="pLeak"></span> kW</td>
+        </tr>
+        <tr>
+          <td>Annual Energy Waste</td>
+          <td><span id="eLeak"></span> kWh/year</td>
+        </tr>
+        <tr>
+          <td>Annual Cost of Leak</td>
+          <td>₹ <span id="cLeak"></span> / year</td>
+        </tr>
+      </table>
+
+      <div class="cta-btn" onclick="showContacts()">
+        Click here to take a survey with us to reduce your leaks 💨📋
+      </div>
+
+      <div id="contacts" style="display:none; margin-top:12px;">
+        <div class="cta-btn" onclick="window.location.href='tel:9843145445'">
+          📞 Call Systel Energy Solutions
+        </div>
+        <div class="cta-btn" onclick="window.location.href='mailto:support@systel.asia'">
+          ✉️ Email: support@systel.asia
+        </div>
+      </div>
+
+      <div class="note">
+        ⚠️ <strong>Important:</strong> These values are approximate and based on standard leak charts.
+        <br><br>
+        <span class="highlight">
+          If you have 10 similar leaks, total cost ≈ 10 × this value.
+        </span>
+        <br><br>
+        👉 For accurate results, a professional ultrasonic leak survey is recommended.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function calculate(){
+
+  const pressure = parseFloat(document.getElementById("pressure").value);
+  const size = parseFloat(document.getElementById("leakSize").value);
+  const days = parseFloat(document.getElementById("days").value);
+  const hours = days * 24; // converting days to hours
+  const sp = parseFloat(document.getElementById("sp").value);
+  const tariff = parseFloat(document.getElementById("tariff").value);
+
+  if([pressure,size,days,sp,tariff].some(isNaN)){
+    alert("Please fill all fields");
+    return;
+  }
+
+  // Base leak flow at 7 bar (CFM)
+  const leakTable = {
+    1: 1.5,
+    2: 6,
+    3: 14,
+    4: 25
+  };
+
+  const qBase = leakTable[size];
+  const qLeak = qBase * (pressure / 7);
+
+  const pLeak = qLeak * sp;
+  const eLeak = pLeak * hours;
+  const cLeak = eLeak * tariff;
+
+  document.getElementById("qLeak").textContent = qLeak.toFixed(1);
+  document.getElementById("pLeak").textContent = pLeak.toFixed(2);
+  document.getElementById("eLeak").textContent = eLeak.toFixed(0);
+  document.getElementById("cLeak").textContent = cLeak.toFixed(0);
+
+  document.getElementById("output").style.display = "block";
+}
+
+function showContacts(){
+  document.getElementById("contacts").style.display = "block";
+}
+</script>
+
+</body>
+</html>
