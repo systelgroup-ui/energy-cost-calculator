@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>kW to Amps Converter</title>
+
+<style>
+:root {
+    --green: #9dd3af;
+    --green-dark: #9dd3af;
+    --grey: #737373;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #c8e6c9, #e8f5e9);
+    padding: 20px;
+}
+
+.container {
+    max-width: 420px;
+    margin: auto;
+    background: #ffffff;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 10px;
+    color: #2e7d32;
+}
+
+label {
+    font-size: 14px;
+    font-weight: 600;
+    display: block;
+    margin-top: 12px;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
+
+button {
+    width: 100%;
+    margin-top: 18px;
+    padding: 12px;
+    font-size: 16px;
+    background: var(--green-dark);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #388e3c;
+}
+
+.result {
+    margin-top: 20px;
+    padding: 16px;
+    background: #e8f5e9;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid #a5d6a7;
+}
+
+.result span {
+    font-size: 28px;
+    font-weight: bold;
+    color: #1b5e20;
+}
+
+.cta-btn {
+    margin-top: 10px;
+    padding: 12px;
+    background: #2e7d32;
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.cta-btn:hover {
+    background: #1b5e20;
+}
+
+small {
+    display: block;
+    margin-top: 12px;
+    color: #555;
+    font-size: 12px;
+    text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Essential Compressed Air Tools</h2>
+    <h2>kW to Amps Converter</h2>
+
+    <label>Power (kW)</label>
+    <input type="number" id="kw" step="0.01" placeholder="e.g. 75">
+
+    <label>Voltage (V)</label>
+    <input type="number" id="voltage" step="1" placeholder="e.g. 415">
+
+    <label>Power Factor</label>
+    <input type="number" id="pf" step="0.01" value="0.9">
+
+    <label>Phase</label>
+    <select id="phase">
+        <option value="single">Single Phase</option>
+        <option value="three">Three Phase</option>
+    </select>
+
+    <button onclick="calculateAmps()">Calculate Amps</button>
+
+    <div class="result">
+        Current (Amps)<br>
+        <span id="amps">—</span>
+    </div>
+
+    <!-- HELP BUTTON -->
+    <button onclick="toggleHelp()">Need Help?</button>
+
+    <!-- CONTACT OPTIONS -->
+    <div id="contacts" style="display:none; margin-top:12px;">
+        <div class="cta-btn" onclick="window.location.href='tel:9843145445'">
+            📞 Call Systel Energy Solutions
+        </div>
+        <div class="cta-btn" onclick="window.location.href='mailto:support@systel.asia'">
+            ✉️ Email: support@systel.asia
+        </div>
+    </div>
+
+    <small>
+        Formula used:<br>
+        Single-phase: I = (kW × 1000) / (V × PF)<br>
+        Three-phase: I = (kW × 1000) / (√3 × V × PF)
+    </small>
+</div>
+
+<script>
+function calculateAmps() {
+    const kw = parseFloat(document.getElementById("kw").value);
+    const voltage = parseFloat(document.getElementById("voltage").value);
+    const pf = parseFloat(document.getElementById("pf").value);
+    const phase = document.getElementById("phase").value;
+
+    if (!kw || !voltage || !pf || pf <= 0) {
+        document.getElementById("amps").textContent = "—";
+        return;
+    }
+
+    let amps;
+    if (phase === "single") {
+        amps = (kw * 1000) / (voltage * pf);
+    } else {
+        amps = (kw * 1000) / (Math.sqrt(3) * voltage * pf);
+    }
+
+    document.getElementById("amps").textContent = amps.toFixed(2) + " A";
+}
+
+function toggleHelp() {
+    const c = document.getElementById("contacts");
+    c.style.display = c.style.display === "none" ? "block" : "none";
+}
+</script>
+
+</body>
+</html>
