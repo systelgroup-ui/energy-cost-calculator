@@ -1,0 +1,1281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Compressed Air Energy Scorecard</title>
+  <style>
+    :root{
+      --bg:#f4fbf5;
+      --card:#ffffff;
+      --ink:#0f172a;
+      --muted:#475569;
+      --green:#1f7a3a;
+      --green2:#2aa44f;
+      --green-light:#e8f5e9;
+      --line:#d7eadb;
+      --warn:#b45309;
+      --bad:#b91c1c;
+      --good:#166534;
+      --shadow: 0 10px 24px rgba(2, 6, 23, .08);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--ink);
+      background: linear-gradient(180deg, #eaf8ed, var(--bg));
+      padding:24px;
+    }
+    .wrap{max-width:1200px;margin:0 auto}
+    h1{
+      margin:0 0 6px;
+      font-size:30px;
+      letter-spacing:.2px;
+      text-align:center;
+      color:#334155;
+      font-weight:750;
+    }
+    .subhead{
+      text-align:center;
+      margin:0 0 18px;
+      color:#64748b;
+      font-size:14px;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+      margin-bottom:18px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    label{
+      font-size:12px;
+      font-weight:700;
+      color:#14532d;
+    }
+    input, select{
+      width:100%;
+      padding:10px 10px;
+      border:1px solid #cde6d1;
+      border-radius:10px;
+      font-size:14px;
+      outline:none;
+      background:#fff;
+      transition: all 0.2s ease;
+    }
+    input:focus, select:focus{
+      border-color:#7bc58d;
+      box-shadow:0 0 0 3px rgba(42,164,79,.18);
+    }
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:2px;
+      line-height:1.25;
+    }
+
+    .btn{
+      width:100%;
+      border:none;
+      border-radius:12px;
+      padding:12px 14px;
+      background:var(--green);
+      color:#fff;
+      font-weight:800;
+      font-size:14px;
+      cursor:pointer;
+      transition: all 0.2s ease;
+    }
+    .btn:hover{
+      filter:brightness(1.08);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(31, 122, 58, 0.3);
+    }
+    .btn:active{transform:translateY(0)}
+
+    .section-title{
+      margin:16px 0 10px;
+      font-size:22px;
+      color:#4b5563;
+      font-weight:800;
+      text-align:center;
+    }
+
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:14px;
+      margin-top:10px;
+    }
+    .kpi{
+      background:var(--green-light);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:14px;
+      text-align:center;
+      transition: transform 0.2s ease;
+    }
+    .kpi:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .kpi .klabel{
+      font-size:12px;
+      letter-spacing:.6px;
+      color:#375c43;
+      font-weight:800;
+      text-transform:uppercase;
+    }
+    .kpi .kvalue{
+      font-size:34px;
+      margin-top:6px;
+      font-weight:900;
+      color:var(--green);
+      line-height:1.05;
+    }
+    .kpi .ksub{
+      margin-top:4px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .sp-line{
+      margin:16px 0 0;
+      font-size:15px;
+      color:#0f172a;
+      font-weight:700;
+      padding:12px;
+      background:var(--green-light);
+      border-radius:10px;
+      border-left:4px solid var(--green2);
+    }
+    .sp-line span{font-weight:800;color:var(--green)}
+    
+    .bandbar{
+      margin-top:12px;
+      padding:12px 14px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+    }
+    .bandrow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .band{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex:1 1 420px;
+      min-width:280px;
+    }
+    .band .legend{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      font-size:12px;
+      color:#334155;
+      font-weight:700;
+      flex-wrap:wrap;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      background:#f1f5f9;
+      border:1px solid #e2e8f0;
+      font-weight:800;
+      font-size:11px;
+    }
+    .chip.good{background:#d1fae5;border-color:#6ee7b7;color:#065f46}
+    .chip.warn{background:#fef3c7;border-color:#fde68a;color:#92400e}
+    .chip.bad{background:#fecaca;border-color:#f87171;color:#7f1d1d}
+
+    .meter{
+      height:12px;
+      background:#d8eadc;
+      border-radius:999px;
+      overflow:hidden;
+      flex:1;
+      min-width:240px;
+      position:relative;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .fill{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, var(--green), var(--green2));
+      border-radius:999px;
+      transition:width .5s cubic-bezier(0.4, 0.0, 0.2, 1);
+      box-shadow: 0 1px 3px rgba(42, 164, 79, 0.5);
+    }
+
+    .component{
+      margin-top:14px;
+    }
+    .comp-row{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:baseline;
+      margin-bottom:8px;
+      font-weight:800;
+      color:#14532d;
+    }
+    .comp-name{font-size:14px}
+    .comp-score{
+      font-size:14px;
+      color:#14532d;
+      padding:4px 10px;
+      background:var(--green-light);
+      border-radius:6px;
+    }
+    .comp-desc{
+      margin:6px 0 0;
+      font-size:13px;
+      color:#334155;
+      line-height:1.4;
+    }
+    .comp-desc em{color:#0f172a;font-style:normal;font-weight:800}
+
+    .two-col{
+      display:grid;
+      grid-template-columns: 1.3fr .9fr;
+      gap:14px;
+      margin-top:14px;
+    }
+    .panel{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:14px;
+    }
+    .panel h3{
+      margin:0 0 10px;
+      font-size:16px;
+      color:#14532d;
+      font-weight:900;
+    }
+    .panel p,.panel li{
+      color:#334155;
+      font-size:13px;
+      line-height:1.4;
+      margin:6px 0;
+    }
+    ol, ul{margin:6px 0;padding-left:20px}
+    li{margin:4px 0}
+    
+    .saving{
+      border-left:5px solid var(--green2);
+      padding:12px 14px;
+      background:var(--green-light);
+      border-radius:10px;
+      margin-top:10px;
+      border:1px solid var(--line);
+      font-size:14px;
+    }
+    .saving strong{
+      color:#0f172a;
+      display:block;
+      margin-bottom:4px;
+    }
+    .saving-value{
+      font-size:16px;
+      font-weight:900;
+      color:var(--green);
+    }
+    .note{
+      margin-top:8px;
+      color:#64748b;
+      font-size:12px;
+      line-height:1.3;
+      font-style:italic;
+    }
+
+    details{
+      margin-top:14px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      padding:12px 14px;
+    }
+    summary{
+      cursor:pointer;
+      font-weight:900;
+      color:#14532d;
+      list-style:none;
+      padding:4px 0;
+      user-select:none;
+    }
+    summary::-webkit-details-marker{display:none}
+    summary::before{
+      content:'▶';
+      display:inline-block;
+      margin-right:8px;
+      transition:transform 0.2s ease;
+      font-size:12px;
+    }
+    details[open] summary::before{
+      transform:rotate(90deg);
+    }
+    .mini{
+      margin-top:10px;
+      font-size:13px;
+      color:#334155;
+      line-height:1.4;
+    }
+
+    .muted{color:var(--muted)}
+    .hide{display:none !important}
+
+    .alert{
+      padding:12px;
+      border-radius:10px;
+      margin-bottom:14px;
+      border-left:4px solid;
+    }
+    .alert-info{
+      background:#e0f2fe;
+      border-color:#0284c7;
+      color:#075985;
+    }
+    .alert-warning{
+      background:#fef3c7;
+      border-color:#f59e0b;
+      color:#92400e;
+    }
+
+    .help-section{
+      margin-top:16px;
+      padding:14px;
+      background:#f8fafc;
+      border:1px solid var(--line);
+      border-radius:12px;
+      text-align:center;
+    }
+    
+    .help-btn{
+      display:inline-block;
+      padding:10px 20px;
+      background:#0284c7;
+      color:#fff;
+      border:none;
+      border-radius:10px;
+      font-weight:800;
+      font-size:14px;
+      cursor:pointer;
+      transition: all 0.2s ease;
+      margin-bottom:12px;
+    }
+    .help-btn:hover{
+      background:#0369a1;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+    .help-btn:active{transform:translateY(0)}
+
+    .cta-btn{
+      display:block;
+      padding:12px 18px;
+      margin:8px auto;
+      max-width:400px;
+      background:linear-gradient(135deg, var(--green), var(--green2));
+      color:#fff;
+      border-radius:10px;
+      font-weight:700;
+      font-size:14px;
+      cursor:pointer;
+      transition: all 0.2s ease;
+      text-decoration:none;
+      border:2px solid transparent;
+    }
+    .cta-btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(31, 122, 58, 0.4);
+      border-color:#fff;
+    }
+    .cta-btn:active{transform:translateY(0)}
+
+    @media (max-width: 980px){
+      .kpis{grid-template-columns: 1fr}
+      .two-col{grid-template-columns: 1fr}
+      .bandrow{flex-direction:column;align-items:stretch}
+      .band{min-width:auto}
+    }
+    @media (max-width: 720px){
+      body{padding:14px}
+      h1{font-size:24px}
+      .grid{gap:10px}
+      .field{gap:4px}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Compressed Air Energy Scorecard</h1>
+    <p class="subhead">Fast, transparent scoring based on specific power, pressure management, leakage, and control strategy with explainable benchmarks.</p>
+
+    <!-- INPUT CARD -->
+    <div class="card">
+      <div class="section-title" style="margin-top:0">System Inputs</div>
+
+      <div class="grid">
+        <div class="field" style="grid-column: span 3;">
+          <label for="avgKw">Average Power (kW) *</label>
+          <input id="avgKw" type="number" min="0" step="0.1" placeholder="e.g., 90" required>
+          <div class="hint">Average compressor package power during normal operation.</div>
+        </div>
+
+        <div class="field" style="grid-column: span 3;">
+          <label for="avgFlow">Average Flow *</label>
+          <input id="avgFlow" type="number" min="0" step="0.1" placeholder="e.g., 500" required>
+          <div class="hint">Average delivered flow (prefer measured data).</div>
+        </div>
+
+        <div class="field" style="grid-column: span 2;">
+          <label for="flowUnit">Flow Unit</label>
+          <select id="flowUnit">
+            <option value="cfm" selected>CFM</option>
+            <option value="m3min">m³/min</option>
+          </select>
+        </div>
+
+        <div class="field" style="grid-column: span 2;">
+          <label for="headerP">Header Pressure *</label>
+          <input id="headerP" type="number" min="0" step="0.01" placeholder="e.g., 7.5" required>
+          <div class="hint">Average plant header pressure.</div>
+        </div>
+
+        <div class="field" style="grid-column: span 2;">
+          <label for="headerUnit">Header Unit</label>
+          <select id="headerUnit">
+            <option value="barg" selected>bar(g)</option>
+            <option value="psig">psig</option>
+          </select>
+        </div>
+
+        <div class="field" style="grid-column: span 2;">
+          <label for="requiredP">Required Pressure *</label>
+          <input id="requiredP" type="number" min="0" step="0.01" placeholder="e.g., 6.7" required>
+          <div class="hint">Minimum pressure at most critical end-use.</div>
+        </div>
+
+        <div class="field" style="grid-column: span 2;">
+          <label for="requiredUnit">Required Unit</label>
+          <select id="requiredUnit">
+            <option value="barg" selected>bar(g)</option>
+            <option value="psig">psig</option>
+          </select>
+        </div>
+
+        <div class="field" style="grid-column: span 3;">
+          <label for="leakPercent">Leakage (%)</label>
+          <input id="leakPercent" type="number" min="0" max="60" step="0.1" placeholder="e.g., 20">
+          <div class="hint">Leak rate as % of average demand. Leave blank if using off-shift flow.</div>
+        </div>
+
+        <div class="field" style="grid-column: span 3;">
+          <label for="offShiftFlow">Off-Shift Flow (optional)</label>
+          <input id="offShiftFlow" type="number" min="0" step="0.1" placeholder="e.g., 80">
+          <div class="hint">Alternative to leakage %. We'll estimate leakage from this.</div>
+        </div>
+
+        <div class="field" style="grid-column: span 2;">
+          <label for="offShiftUnit">Off-Shift Unit</label>
+          <select id="offShiftUnit">
+            <option value="cfm" selected>CFM</option>
+            <option value="m3min">m³/min</option>
+          </select>
+        </div>
+
+        <div class="field" style="grid-column: span 2;">
+          <label for="variation">Header Fluctuation (±)</label>
+          <input id="variation" type="number" min="0" step="0.1" placeholder="e.g., 1.5">
+          <div class="hint">Optional: typical pressure variation around setpoint.</div>
+        </div>
+
+        <div class="field" style="grid-column: span 2;">
+          <label for="variationUnit">Fluctuation Unit</label>
+          <select id="variationUnit">
+            <option value="psig" selected>psig</option>
+            <option value="barg">bar(g)</option>
+          </select>
+        </div>
+
+        <div class="field" style="grid-column: span 3;">
+          <label for="hoursYear">Hours / Year *</label>
+          <input id="hoursYear" type="number" min="0" step="1" placeholder="e.g., 8400" required>
+          <div class="hint">Total operating hours per year.</div>
+        </div>
+
+        <div class="field" style="grid-column: span 3;">
+          <label for="tariff">Tariff (₹/kWh) *</label>
+          <input id="tariff" type="number" min="0" step="0.1" placeholder="e.g., 9" required>
+          <div class="hint">Electricity cost for savings estimates.</div>
+        </div>
+
+        <div class="field" style="grid-column: span 4;">
+          <label for="controlMode">Control System</label>
+          <select id="controlMode">
+            <option value="" selected disabled>Select control system...</option>
+            <option value="vsd_trim_base_seq">VSD trim + base + sequencing</option>
+            <option value="sequencing">Sequencing controls (multi fixed)</option>
+            <option value="single_vsd_basic">Single VSD (basic)</option>
+            <option value="no_seq_operator">Multiple compressors without sequencing</option>
+            <option value="unknown">Unknown</option>
+          </select>
+          <div class="hint">Select the best match for your control approach.</div>
+        </div>
+
+        <div style="grid-column: span 12;">
+          <button class="btn" id="calcBtn">Calculate Scorecard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="card" id="resultsCard" style="display:none;">
+      <div class="section-title">Performance Scores</div>
+
+      <div class="kpis">
+        <div class="kpi">
+          <div class="klabel">Overall Score</div>
+          <div class="kvalue" id="overallScore">73</div>
+          <div class="ksub" id="overallDesc">Good performance; improvements likely in one or two areas.</div>
+        </div>
+        <div class="kpi">
+          <div class="klabel">Energy Performance Score</div>
+          <div class="kvalue" id="epsScore">73</div>
+          <div class="ksub" id="epsDesc">EPS is weighted: Efficiency 40% • Pressure 20% • Leakage 25% • Controls 15%.</div>
+        </div>
+        <div class="kpi">
+          <div class="klabel">Confidence</div>
+          <div class="kvalue" id="confidenceBand">High</div>
+          <div class="ksub" id="confidenceWhy">Average kW provided • Average flow provided • Required pressure provided • Leakage % provided</div>
+        </div>
+      </div>
+
+      <div class="sp-line" id="spLine">
+        Specific Power: <span>18.00 kW/100 CFM</span> (Good)
+      </div>
+
+      <!-- Benchmark visualization -->
+      <div class="bandbar" id="benchmarkBox">
+        <div class="bandrow">
+          <div class="band">
+            <div class="legend">
+              <span class="chip good">Excellent</span>
+              <span class="chip good">Good</span>
+              <span class="chip warn">Average</span>
+              <span class="chip bad">Poor</span>
+              <span class="muted" id="spBenchText" style="margin-left:6px;">Bands: ≤15.83 / ≤17.87 / ≤19.92 / >19.92 kW/100 CFM</span>
+            </div>
+          </div>
+          <div style="flex:1 1 420px;min-width:280px;">
+            <div class="meter" title="Your position within benchmark bands (lower is better)">
+              <div class="fill" id="spPointer" style="width:32%"></div>
+            </div>
+            <div class="note" id="spPointerNote" style="margin-top:6px;">Your position is ~32% (lower is better). You're in the Good range.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Component scores -->
+      <div class="component">
+        <div style="font-size:16px;font-weight:900;margin-top:16px;color:#0f172a;">Component Scores & Analysis</div>
+
+        <div class="panel" style="margin-top:10px;">
+          <div class="comp-row">
+            <div class="comp-name">Efficiency (Specific Power)</div>
+            <div class="comp-score" id="sEffTxt">82 (Good)</div>
+          </div>
+          <div class="meter"><div class="fill" id="mEff" style="width:82%"></div></div>
+          <div class="comp-desc" id="dEff">Based on <em>Specific Power</em> = 18.00 kW/100 CFM at ~108.78 psig. Benchmarks (pressure-adjusted): Excellent ≤15.83, Good ≤17.87, Average ≤19.92, Poor >19.92. Current band: <em>Good</em>.</div>
+        </div>
+
+        <div class="panel" style="margin-top:10px;">
+          <div class="comp-row">
+            <div class="comp-name">Pressure Optimization</div>
+            <div class="comp-score" id="sPressTxt">87 (Excellent)</div>
+          </div>
+          <div class="meter"><div class="fill" id="mPress" style="width:87%"></div></div>
+          <div class="comp-desc" id="dPress">Pressure score considers <em>excess header pressure</em> and <em>stability</em>. Header: 108.78 psig, Required: 97.16 psig → Excess: <em>11.62 psig</em>. Fluctuation (±): not provided (neutral default applied).</div>
+        </div>
+
+        <div class="panel" style="margin-top:10px;">
+          <div class="comp-row">
+            <div class="comp-name">Leakage Management</div>
+            <div class="comp-score" id="sLeakTxt">55 (Average)</div>
+          </div>
+          <div class="meter"><div class="fill" id="mLeak" style="width:55%"></div></div>
+          <div class="comp-desc" id="dLeak">Leak score is based on leak % severity. Current leakage is <em>20.00%</em> (provided directly as leakage %). Typical targets: <em>≤10%</em> good, <em>≤5%</em> best practice.</div>
+        </div>
+
+        <div class="panel" style="margin-top:10px;">
+          <div class="comp-row">
+            <div class="comp-name">Control System</div>
+            <div class="comp-score" id="sControlTxt">70 (Good)</div>
+          </div>
+          <div class="meter"><div class="fill" id="mControl" style="width:70%"></div></div>
+          <div class="comp-desc" id="dControl">Single VSD helps, but performance depends on correct trim/base setup and avoiding multiple machines unloading together. Control score is assigned from the selected control strategy (not from measurements). Current: <em>70</em>.</div>
+        </div>
+      </div>
+
+      <!-- Drivers + Savings -->
+      <div class="two-col">
+        <div class="panel">
+          <h3>Top Loss Drivers</h3>
+          <ol id="driversList">
+            <li>Leakage is high (~20.00%).</li>
+            <li>Excess pressure is moderate (~11.62 psig).</li>
+            <li>Specific power (18.00 kW/100 CFM) is within 'Average' or better band.</li>
+            <li>Control strategy is reasonable (score 70).</li>
+          </ol>
+          <div class="note" id="driversNote">Drivers are ranked by severity based on your inputs. For higher accuracy, log kW, flow and pressure for 7–14 days.</div>
+        </div>
+
+        <div class="panel">
+          <h3>Potential Annual Savings</h3>
+          <div class="saving" id="saveLeak">
+            <strong>Leak Reduction (to 5%):</strong>
+            <div class="saving-value">₹1,08,86,400 – ₹1,63,29,600</div>
+          </div>
+          <div class="saving" id="savePress">
+            <strong>Pressure Optimization:</strong>
+            <div class="saving-value">₹35,34,720 – ₹52,96,080</div>
+          </div>
+          <div class="note">
+            These are indicative ranges (±20%) based on the inputs provided. Confirm with 7–14 days of logging for higher accuracy.
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommended Actions -->
+      <div class="panel" style="margin-top:14px;">
+        <h3>Recommended Actions</h3>
+        <div class="two-col" style="margin-top:0;">
+          <div class="panel" style="box-shadow:none;border:none;padding:0;">
+            <h3 style="margin-top:0;font-size:15px;">Fast wins (0–4 weeks)</h3>
+            <ul id="fastWins">
+              <li>Conduct an ultrasonic leak survey and fix the largest leaks first; tag leaks and verify repair.</li>
+              <li>Isolate off-shift zones (valves) and stop non-production blow-offs where possible.</li>
+              <li>Reduce header setpoint in 1–2 psi steps and validate critical end-use pressure at the farthest point.</li>
+              <li>Continue monitoring specific power periodically to maintain efficiency.</li>
+            </ul>
+          </div>
+          <div class="panel" style="box-shadow:none;border:none;padding:0;">
+            <h3 style="margin-top:0;font-size:15px;">Projects (1–6 months)</h3>
+            <ul id="projects">
+              <li>Implement a quarterly leak KPI (target ≤10%, stretch ≤5%) with a documented repair workflow.</li>
+              <li>Reduce pressure drops by addressing filters, separators, dryers, and undersized piping (measure ΔP).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explainability -->
+      <details open>
+        <summary>How the scores are calculated (transparent method)</summary>
+        <div class="mini" id="methodText">
+          <strong>Energy Performance Score (EPS)</strong> is computed from four components:
+          <ul>
+            <li><strong>Efficiency (40%)</strong>: Specific Power = kW per 100 CFM, benchmarked against pressure-adjusted bands.</li>
+            <li><strong>Pressure (20%)</strong>: Excess pressure (header vs required) plus stability (optional fluctuation input).</li>
+            <li><strong>Leakage (25%)</strong>: Leak % severity using standard target bands (≤10% good, ≤5% best practice).</li>
+            <li><strong>Controls (15%)</strong>: Practical scoring from the selected control strategy (sequencing, VSD trim/base, etc.).</li>
+          </ul>
+          <strong>Overall Score</strong> defaults to EPS in this web version (fast and energy-focused). For comprehensive assessments, add maturity modules (metering, maintenance, governance) to blend scores (e.g., 75% EPS + 25% Maturity).
+        </div>
+      </details>
+
+      <details>
+        <summary>Assumptions used (important)</summary>
+        <div class="mini" id="assumptionsText">
+          <ul>
+            <li><strong>Pressure-energy relationship:</strong> Savings estimate assumes ~0.5% energy per 1 psi of excess pressure (conservative, indicative).</li>
+            <li><strong>Specific power benchmarks:</strong> Base bands are referenced at ~100 psig and adjusted by +0.2% per psi difference to reflect pressure impact.</li>
+            <li><strong>Savings ranges:</strong> Displayed as ±20% to remain realistic without full logging study.</li>
+            <li><strong>Leakage estimation:</strong> If leakage % is not provided, it is estimated from off-shift flow relative to average flow (clamped to 0–60%).</li>
+            <li><strong>Controls score:</strong> Derived from selected control type (qualitative), not from measured cycling/unload/bypass data.</li>
+          </ul>
+        </div>
+      </details>
+
+      <!-- Need Help Section -->
+      <div class="help-section">
+        <button class="help-btn" id="needHelpBtn" onclick="toggleContacts()">
+           Need Help?
+        </button>
+        <div id="contacts" style="display:none; margin-top:12px;">
+          <div class="cta-btn" onclick="window.location.href='tel:9843145445'">
+            📞 Call Systel Energy Solutions
+          </div>
+          <div class="cta-btn" onclick="window.location.href='mailto:support@systel.asia'">
+            ✉️ Email: support@systel.asia
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Toggle contacts visibility
+function toggleContacts() {
+  const contactsDiv = document.getElementById('contacts');
+  const btn = document.getElementById('needHelpBtn');
+  if (contactsDiv.style.display === 'none') {
+    contactsDiv.style.display = 'block';
+    btn.textContent = '✕ Close';
+  } else {
+    contactsDiv.style.display = 'none';
+    btn.textContent = 'Need Help?';
+  }
+}
+/* =========================
+   Utilities
+========================= */
+function clamp(x, min, max) { return Math.max(min, Math.min(max, x)); }
+
+function toCFM(flowValue, flowUnit) {
+  if (flowValue == null || isNaN(flowValue)) return NaN;
+  if (flowUnit === "cfm") return flowValue;
+  if (flowUnit === "m3min") return flowValue * 35.3147;
+  throw new Error("Unsupported flow unit");
+}
+
+function toPSIG(pValue, pUnit) {
+  if (pValue == null || isNaN(pValue)) return NaN;
+  if (pUnit === "psig") return pValue;
+  if (pUnit === "barg") return pValue * 14.5038;
+  throw new Error("Unsupported pressure unit");
+}
+
+function fmt2(x){ return (x==null || isNaN(x)) ? "—" : Number(x).toFixed(2); }
+function fmt0(x){ return (x==null || isNaN(x)) ? "—" : Math.round(Number(x)).toString(); }
+
+function fmtINR(x){
+  if (x==null || isNaN(x)) return "—";
+  return "₹" + Math.round(x).toLocaleString("en-IN");
+}
+function rangeINR(r){
+  if (!r) return "—";
+  return `${fmtINR(r.low)} – ${fmtINR(r.high)}`;
+}
+
+function scoreLabelFromValue(score){
+  if (score == null || isNaN(score)) return "—";
+  if (score >= 85) return "Excellent";
+  if (score >= 70) return "Good";
+  if (score >= 50) return "Average";
+  return "Poor";
+}
+
+/* =========================
+   Benchmarks
+   Base thresholds for ~100 psig (≈ 6.9 bar(g))
+   Units: kW per 100 CFM
+========================= */
+const SP_BENCH_100PSIG = {
+  excellent: 15.5,
+  good: 17.5,
+  average: 19.5,
+  poor: 22.0
+};
+
+// Adjust benchmark thresholds for header pressure
+// +0.2% threshold per psi above 100 psig
+function adjustThreshold(base, headerPsig) {
+  return base * (1 + 0.002 * (headerPsig - 100));
+}
+
+/* =========================
+   Component scoring
+========================= */
+function scoreSpecificPower(avgKw, avgCfm, headerPsig) {
+  if (!(avgKw > 0) || !(avgCfm > 0)) return { sp: null, score: null, thresholds: null, band: null };
+
+  const sp = avgKw / (avgCfm / 100); // kW per 100 CFM
+
+  const T1 = adjustThreshold(SP_BENCH_100PSIG.excellent, headerPsig);
+  const T2 = adjustThreshold(SP_BENCH_100PSIG.good, headerPsig);
+  const T3 = adjustThreshold(SP_BENCH_100PSIG.average, headerPsig);
+  const T4 = adjustThreshold(SP_BENCH_100PSIG.poor, headerPsig);
+
+  let s;
+  if (sp <= T1) s = 100;
+  else if (sp <= T2) s = 100 - 20 * (sp - T1) / (T2 - T1);
+  else if (sp <= T3) s = 80 - 25 * (sp - T2) / (T3 - T2);
+  else if (sp <= T4) s = 55 - 35 * (sp - T3) / (T4 - T3);
+  else s = 20 - 20 * Math.min(1, (sp - T4) / (0.25 * T4));
+
+  let band = "Poor";
+  if (sp <= T1) band = "Excellent";
+  else if (sp <= T2) band = "Good";
+  else if (sp <= T3) band = "Average";
+  else band = "Poor";
+
+  return { sp, score: clamp(s, 0, 100), thresholds: { T1, T2, T3, T4 }, band };
+}
+
+function scorePressure(headerPsig, requiredPsig, variationPsigNullable) {
+  if (!(headerPsig >= 0) || !(requiredPsig >= 0)) return { excessPsig: null, score: null, sExcess: null, sFluct: null };
+
+  const excess = Math.max(0, headerPsig - requiredPsig);
+  const sExcess = clamp(100 - 6 * excess, 0, 100);
+
+  let sFluct;
+  if (variationPsigNullable == null || isNaN(variationPsigNullable)) {
+    sFluct = 60;
+  } else {
+    sFluct = clamp(100 - 10 * Math.max(0, variationPsigNullable), 0, 100);
+  }
+
+  const sPressure = 0.7 * sExcess + 0.3 * sFluct;
+  return { excessPsig: excess, score: clamp(sPressure, 0, 100), sExcess, sFluct };
+}
+
+function scoreLeakage(leakPercentNullable, offShiftFlowCfmNullable, avgCfm) {
+  let p = null;
+
+  if (leakPercentNullable != null && !isNaN(leakPercentNullable) && leakPercentNullable !== "") {
+    p = clamp(Number(leakPercentNullable), 0, 60);
+  } else if (offShiftFlowCfmNullable != null && !isNaN(offShiftFlowCfmNullable) && (avgCfm > 0)) {
+    p = clamp(100 * offShiftFlowCfmNullable / avgCfm, 0, 60);
+  }
+
+  if (p == null) return { leakPercent: null, score: null, source: "unknown" };
+
+  let s;
+  if (p <= 5) s = 100;
+  else if (p <= 10) s = 100 - 4 * (p - 5);
+  else if (p <= 20) s = 80 - 2.5 * (p - 10);
+  else if (p <= 30) s = 55 - 2.5 * (p - 20);
+  else s = Math.max(10, 30 - 1 * (p - 30));
+
+  const source = (leakPercentNullable != null && leakPercentNullable !== "" && !isNaN(leakPercentNullable)) ? "percent" : "offshift";
+  return { leakPercent: p, score: clamp(s, 0, 100), source };
+}
+
+function scoreControls(controlMode) {
+  const map = {
+    vsd_trim_base_seq: 100,
+    sequencing: 80,
+    single_vsd_basic: 70,
+    no_seq_operator: 40,
+    unknown: 55
+  };
+  return map[controlMode] != null ? map[controlMode] : 55;
+}
+
+/* =========================
+   Confidence assessment
+========================= */
+function computeConfidenceWhy(raw, normalized, leakObj) {
+  const reasons = [];
+  const missing = [];
+
+  if (raw.avgKw > 0) reasons.push("Average kW provided"); else missing.push("Average kW missing");
+  if (normalized.avgCfm > 0) reasons.push("Average flow provided"); else missing.push("Average flow missing");
+  if (normalized.requiredPsig > 0) reasons.push("Required pressure provided"); else missing.push("Required pressure missing");
+  if (leakObj.leakPercent != null) {
+    reasons.push(leakObj.source === "offshift" ? "Leakage estimated from off-shift flow" : "Leakage % provided");
+  } else {
+    missing.push("Leakage input missing");
+  }
+  if (raw.controlMode && raw.controlMode !== "unknown") reasons.push("Control mode provided"); else missing.push("Control mode unknown");
+  if (raw.hoursPerYear > 0) reasons.push("Hours/year provided"); else missing.push("Hours/year missing");
+  if (raw.tariff > 0) reasons.push("Tariff provided"); else missing.push("Tariff missing");
+
+  // Calculate confidence score
+  let c = 100;
+  if (!(raw.avgKw > 0)) c -= 60;
+  if (!(normalized.avgCfm > 0)) c -= 60;
+  if (!(normalized.requiredPsig > 0)) c -= 15;
+  if (leakObj.leakPercent == null) c -= 20;
+  if (!raw.controlMode || raw.controlMode === "unknown") c -= 10;
+  if (!(raw.hoursPerYear > 0)) c -= 10;
+
+  c = clamp(c, 0, 100);
+  const band = c >= 80 ? "High" : (c >= 60 ? "Medium" : "Low");
+
+  return {
+    value: c,
+    band,
+    whyText:
+      band === "High"
+        ? reasons.slice(0,4).join(" • ")
+        : (missing.length ? ("Missing: " + missing.join(" • ")) : reasons.join(" • "))
+  };
+}
+
+/* =========================
+   EPS + Savings
+========================= */
+function computeEPS(sEff, sPressure, sLeak, sControl) {
+  if ([sEff, sPressure, sLeak, sControl].some(v => v == null || isNaN(v))) return null;
+  return clamp(
+    0.40 * sEff +
+    0.20 * sPressure +
+    0.25 * sLeak +
+    0.15 * sControl,
+    0, 100
+  );
+}
+
+function estimateSavings(raw, leakPercent, excessPsig) {
+  const { avgKw, hoursPerYear, tariff } = raw;
+  if (!(avgKw > 0) || !(hoursPerYear > 0) || !(tariff > 0)) {
+    return { note: "Provide avg kW, hours/year and tariff for savings estimate." };
+  }
+  const totalKwh = avgKw * hoursPerYear;
+
+  // Leak waste and "to 5%" improvement estimate
+  let leakCostTo5 = null;
+  if (leakPercent != null) {
+    const target = 5; // %
+    const reducPct = Math.max(0, leakPercent - target);
+    const leakKwReduc = avgKw * (reducPct / 100);
+    leakCostTo5 = leakKwReduc * hoursPerYear * tariff;
+  }
+
+  // Pressure: ~0.5% energy per psi excess (conservative)
+  const pressurePenaltyPct = 0.005 * Math.max(0, excessPsig || 0);
+  const pressureCost = totalKwh * pressurePenaltyPct * tariff;
+
+  const range = (x) => x == null ? null : { low: 0.8*x, mid: x, high: 1.2*x };
+
+  return {
+    leakReductionTo5: range(leakCostTo5),
+    pressureOptimization: range(pressureCost)
+  };
+}
+
+/* =========================
+   Loss drivers + actions
+========================= */
+function computeDriversAndActions(effObj, pressObj, leakObj, controlScore) {
+  const drivers = [];
+  const fast = [];
+  const proj = [];
+
+  // Analyze leakage
+  if (leakObj.leakPercent != null) {
+    if (leakObj.leakPercent > 20) drivers.push({k:"Leakage", w: 3, t:`Leakage is high (~${fmt2(leakObj.leakPercent)}%).`});
+    else if (leakObj.leakPercent > 10) drivers.push({k:"Leakage", w: 2, t:`Leakage is moderate (~${fmt2(leakObj.leakPercent)}%).`});
+    else drivers.push({k:"Leakage", w: 1, t:`Leakage appears controlled (~${fmt2(leakObj.leakPercent)}%).`});
+  } else {
+    drivers.push({k:"Leakage", w: 2, t:`Leakage not provided—score uses a conservative assumption.`});
+  }
+
+  // Analyze pressure
+  if (pressObj.excessPsig != null) {
+    if (pressObj.excessPsig > 10) drivers.push({k:"Pressure", w: 3, t:`Excess pressure is significant (~${fmt2(pressObj.excessPsig)} psig).`});
+    else if (pressObj.excessPsig > 5) drivers.push({k:"Pressure", w: 2, t:`Excess pressure is moderate (~${fmt2(pressObj.excessPsig)} psig).`});
+    else drivers.push({k:"Pressure", w: 1, t:`Excess pressure is low (~${fmt2(pressObj.excessPsig)} psig).`});
+  } else {
+    drivers.push({k:"Pressure", w: 2, t:`Required/header pressure not fully provided—pressure optimization may be underestimated.`});
+  }
+
+  // Analyze efficiency
+  if (effObj.sp != null && effObj.thresholds) {
+    const { T3 } = effObj.thresholds;
+    if (effObj.sp > T3) drivers.push({k:"Efficiency", w: 3, t:`Specific power (${fmt2(effObj.sp)} kW/100 CFM) is worse than 'Average' for this pressure.`});
+    else drivers.push({k:"Efficiency", w: 1, t:`Specific power (${fmt2(effObj.sp)} kW/100 CFM) is within 'Average' or better band.`});
+  } else {
+    drivers.push({k:"Efficiency", w: 2, t:`Power/flow data missing—cannot benchmark compressor efficiency.`});
+  }
+
+  // Analyze controls
+  if (controlScore <= 55) drivers.push({k:"Controls", w: 2, t:`Control strategy indicates improvement potential (score ${fmt0(controlScore)}).`});
+  else drivers.push({k:"Controls", w: 1, t:`Control strategy is reasonable (score ${fmt0(controlScore)}).`});
+
+  // Sort by weight desc
+  drivers.sort((a,b)=>b.w-a.w);
+
+  // Generate leakage actions
+  if (leakObj.leakPercent == null || leakObj.leakPercent > 10) {
+    fast.push("Conduct an ultrasonic leak survey and fix the largest leaks first; tag leaks and verify repair.");
+    fast.push("Isolate off-shift zones (valves) and stop non-production blow-offs where possible.");
+    proj.push("Implement a quarterly leak KPI (target ≤10%, stretch ≤5%) with a documented repair workflow.");
+  } else {
+    fast.push("Maintain leak performance with routine walkthroughs and quick leak repair turnaround.");
+  }
+
+  // Generate pressure actions
+  if (pressObj.excessPsig != null && pressObj.excessPsig > 5) {
+    fast.push("Reduce header setpoint in 1–2 psi steps and validate critical end-use pressure at the farthest point.");
+    proj.push("Reduce pressure drops by addressing filters, separators, dryers, and undersized piping (measure ΔP).");
+  } else {
+    fast.push("Confirm required pressure at the most critical end-use and avoid increasing header pressure to mask local issues.");
+  }
+
+  // Generate efficiency actions
+  if (effObj.band === "Average" || effObj.band === "Poor") {
+    fast.push("Log kW and delivered flow for 7–14 days to confirm specific power and identify part-load waste.");
+    proj.push("Optimize sequencing: define base/trim roles, prevent multiple compressors unloading simultaneously, and review VSD sizing.");
+  } else {
+    fast.push("Continue monitoring specific power periodically to maintain efficiency.");
+  }
+
+  // Generate control actions
+  if (controlScore <= 55) {
+    proj.push("Evaluate a master sequencing controller or control logic upgrade if multiple compressors operate together.");
+  }
+
+  return { drivers, fast, proj };
+}
+
+/* =========================
+   Rendering helpers
+========================= */
+function setFill(id, score){
+  const el = document.getElementById(id);
+  const v = (score == null || isNaN(score)) ? 0 : clamp(score, 0, 100);
+  el.style.width = v + "%";
+}
+
+function setText(id, txt){ 
+  const el = document.getElementById(id);
+  if(el) el.textContent = txt; 
+}
+
+function setHTML(id, html){ 
+  const el = document.getElementById(id);
+  if(el) el.innerHTML = html; 
+}
+
+function describeOverall(score){
+  if (score == null || isNaN(score)) return "Provide the required inputs to calculate.";
+  const band = scoreLabelFromValue(score);
+  if (band === "Excellent") return "Excellent energy performance with clear best-practice alignment.";
+  if (band === "Good") return "Good performance; improvements likely in one or two areas.";
+  if (band === "Average") return "Average performance; meaningful savings potential typically exists.";
+  return "Poor performance; high savings potential and likely operational risks.";
+}
+
+function describeEPS(score){
+  if (score == null || isNaN(score)) return "EPS requires avg kW and avg flow at minimum.";
+  return "EPS is weighted: Efficiency 40% • Pressure 20% • Leakage 25% • Controls 15%.";
+}
+
+function describeEfficiency(effObj, headerPsig){
+  if (effObj.score == null) return "Provide average kW and average flow to benchmark specific power.";
+  const { sp, band, thresholds } = effObj;
+  const t = thresholds;
+  return `Based on <em>Specific Power</em> = ${fmt2(sp)} kW/100 CFM at ~${fmt2(headerPsig)} psig. Benchmarks (pressure-adjusted): Excellent ≤${fmt2(t.T1)}, Good ≤${fmt2(t.T2)}, Average ≤${fmt2(t.T3)}, Poor >${fmt2(t.T3)}. Current band: <em>${band}</em>.`;
+}
+
+function describePressure(pressObj, headerPsig, requiredPsig, variationPsig){
+  if (pressObj.score == null) return "Provide header pressure and required pressure to score pressure optimization.";
+  const ex = pressObj.excessPsig;
+  const vtxt = (variationPsig == null || isNaN(variationPsig)) ? "not provided (neutral default applied)" : `${fmt2(variationPsig)} psig`;
+  return `Pressure score considers <em>excess header pressure</em> and <em>stability</em>. Header: ${fmt2(headerPsig)} psig, Required: ${fmt2(requiredPsig)} psig → Excess: <em>${fmt2(ex)} psig</em>. Fluctuation (±): ${vtxt}.`;
+}
+
+function describeLeak(leakObj, avgCfm){
+  if (leakObj.score == null) return "Enter leakage % or off-shift flow to estimate leak severity.";
+  const src = leakObj.source === "offshift"
+    ? `estimated from off-shift flow vs average flow (${fmt2(avgCfm)} CFM)`
+    : "provided directly as leakage %";
+  return `Leak score is based on leak % severity. Current leakage is <em>${fmt2(leakObj.leakPercent)}%</em> (${src}). Typical targets: <em>≤10%</em> good, <em>≤5%</em> best practice.`;
+}
+
+function describeControl(controlMode, sControl){
+  const mapText = {
+    vsd_trim_base_seq: "VSD trim + base + sequencing typically delivers stable pressure with good part-load efficiency.",
+    sequencing: "Sequencing controls generally reduce compressor fighting and improve part-load efficiency.",
+    single_vsd_basic: "Single VSD helps, but performance depends on correct trim/base setup and avoiding multiple machines unloading together.",
+    no_seq_operator: "Without sequencing, compressors often fight each other and waste energy at part-load/unloaded operation.",
+    unknown: "Unknown control strategy reduces confidence; control optimization may have hidden savings."
+  };
+  const txt = mapText[controlMode] || mapText.unknown;
+  return `${txt} Control score is assigned from the selected control strategy (not from measurements). Current: <em>${fmt0(sControl)}</em>.`;
+}
+
+function computeSPPointerPercent(sp, thresholds){
+  // Map sp across bands to a 0-100 pointer (lower is better)
+  const { T1, T2, T3, T4 } = thresholds;
+  if (sp <= T1) return 12;
+  if (sp <= T2) return 12 + (28 * (sp - T1) / (T2 - T1));
+  if (sp <= T3) return 40 + (30 * (sp - T2) / (T3 - T2));
+  if (sp <= T4) return 70 + (20 * (sp - T3) / (T4 - T3));
+  return 90 + 10 * Math.min(1, (sp - T4) / (0.25*T4));
+}
+
+/* =========================
+   Main compute + render
+========================= */
+function parseNum(id){
+  const v = document.getElementById(id).value;
+  if (v === "" || v == null) return null;
+  const n = Number(v);
+  return isNaN(n) ? null : n;
+}
+
+function render(result){
+  // KPI row
+  setText("overallScore", result.overall == null ? "—" : fmt0(result.overall));
+  setText("epsScore", result.eps == null ? "—" : fmt0(result.eps));
+  setText("confidenceBand", result.confidence.band ?? "—");
+  setText("confidenceWhy", result.confidence.whyText ?? "—");
+
+  setText("overallDesc", describeOverall(result.overall));
+  setText("epsDesc", describeEPS(result.eps));
+
+  // Specific power line
+  if (result.eff.sp == null){
+    setHTML("spLine", "Specific Power: <span>—</span> (Provide average kW and average flow)");
+    setText("spBenchText", "Benchmarks will appear once specific power is available.");
+    setFill("spPointer", 0);
+    setText("spPointerNote", "—");
+  } else {
+    setHTML("spLine", `Specific Power: <span>${fmt2(result.eff.sp)} kW/100 CFM</span> (${result.eff.band})`);
+    const t = result.eff.thresholds;
+    setText("spBenchText", `Bands: ≤${fmt2(t.T1)} / ≤${fmt2(t.T2)} / ≤${fmt2(t.T3)} / >${fmt2(t.T3)} kW/100 CFM`);
+    const p = computeSPPointerPercent(result.eff.sp, t);
+    setFill("spPointer", p);
+    setText("spPointerNote", `Your position is ~${fmt0(p)}% (lower is better). You're in the ${result.eff.band} range.`);
+  }
+
+  // Component scores
+  setText("sEffTxt", result.sEff == null ? "—" : `${fmt0(result.sEff)} (${scoreLabelFromValue(result.sEff)})`);
+  setFill("mEff", result.sEff);
+  setHTML("dEff", describeEfficiency(result.eff, result.norm.headerPsig));
+
+  setText("sPressTxt", result.sPress == null ? "—" : `${fmt0(result.sPress)} (${scoreLabelFromValue(result.sPress)})`);
+  setFill("mPress", result.sPress);
+  setHTML("dPress", describePressure(result.press, result.norm.headerPsig, result.norm.requiredPsig, result.norm.variationPsig));
+
+  setText("sLeakTxt", result.sLeak == null ? "—" : `${fmt0(result.sLeak)} (${scoreLabelFromValue(result.sLeak)})`);
+  setFill("mLeak", result.sLeak);
+  setHTML("dLeak", describeLeak(result.leak, result.norm.avgCfm));
+
+  setText("sControlTxt", `${fmt0(result.sControl)} (${scoreLabelFromValue(result.sControl)})`);
+  setFill("mControl", result.sControl);
+  setHTML("dControl", describeControl(result.raw.controlMode, result.sControl));
+
+  // Drivers
+  const driversEl = document.getElementById("driversList");
+  driversEl.innerHTML = "";
+  result.drivers.forEach(d=>{
+    const li = document.createElement("li");
+    li.textContent = d.t;
+    driversEl.appendChild(li);
+  });
+  setText("driversNote", "Drivers are ranked by severity based on your inputs. For higher accuracy, log kW, flow and pressure for 7–14 days.");
+
+  // Savings
+  if (result.savings.note){
+    setHTML("saveLeak", `<strong>Note:</strong><div class="saving-value">${result.savings.note}</div>`);
+    setHTML("savePress", `<strong>—</strong><div class="saving-value">—</div>`);
+  } else {
+    setHTML("saveLeak", `<strong>Leak Reduction (to 5%):</strong><div class="saving-value">${rangeINR(result.savings.leakReductionTo5)}</div>`);
+    setHTML("savePress", `<strong>Pressure Optimization:</strong><div class="saving-value">${rangeINR(result.savings.pressureOptimization)}</div>`);
+  }
+
+  // Actions
+  const fastEl = document.getElementById("fastWins");
+  const projEl = document.getElementById("projects");
+  fastEl.innerHTML = "";
+  projEl.innerHTML = "";
+  result.actions.fast.forEach(a=>{
+    const li = document.createElement("li");
+    li.textContent = a;
+    fastEl.appendChild(li);
+  });
+  result.actions.proj.forEach(a=>{
+    const li = document.createElement("li");
+    li.textContent = a;
+    projEl.appendChild(li);
+  });
+}
+
+function computeAndRender(){
+  const raw = {
+    avgKw: parseNum("avgKw") ?? 0,
+    flowValue: parseNum("avgFlow") ?? 0,
+    flowUnit: document.getElementById("flowUnit").value,
+    headerPValue: parseNum("headerP") ?? 0,
+    headerPUnit: document.getElementById("headerUnit").value,
+    requiredPValue: parseNum("requiredP") ?? 0,
+    requiredPUnit: document.getElementById("requiredUnit").value,
+    leakPercent: document.getElementById("leakPercent").value,
+    offShiftFlowValue: parseNum("offShiftFlow"),
+    offShiftFlowUnit: document.getElementById("offShiftUnit").value,
+    pressureVariationValue: parseNum("variation"),
+    pressureVariationUnit: document.getElementById("variationUnit").value,
+    hoursPerYear: parseNum("hoursYear") ?? 0,
+    tariff: parseNum("tariff") ?? 0,
+    controlMode: document.getElementById("controlMode").value
+  };
+
+  const norm = {
+    avgCfm: toCFM(raw.flowValue, raw.flowUnit),
+    headerPsig: toPSIG(raw.headerPValue, raw.headerPUnit),
+    requiredPsig: toPSIG(raw.requiredPValue, raw.requiredPUnit),
+    offShiftFlowCfm: raw.offShiftFlowValue == null ? null : toCFM(raw.offShiftFlowValue, raw.offShiftFlowUnit),
+    variationPsig: raw.pressureVariationValue == null ? null : toPSIG(raw.pressureVariationValue, raw.pressureVariationUnit)
+  };
+
+  const eff = scoreSpecificPower(raw.avgKw, norm.avgCfm, norm.headerPsig);
+  const press = scorePressure(norm.headerPsig, norm.requiredPsig, norm.variationPsig);
+  const leak = scoreLeakage(raw.leakPercent, norm.offShiftFlowCfm, norm.avgCfm);
+  const sControl = scoreControls(raw.controlMode);
+
+  const eps = computeEPS(eff.score, press.score, leak.score, sControl);
+  const overall = eps;
+
+  const confidence = computeConfidenceWhy(raw, norm, leak);
+  const savings = estimateSavings(raw, leak.leakPercent, press.excessPsig);
+
+  const da = computeDriversAndActions(eff, press, leak, sControl);
+
+  render({
+    raw,
+    norm,
+    eff,
+    press,
+    leak,
+    sEff: eff.score,
+    sPress: press.score,
+    sLeak: leak.score,
+    sControl,
+    eps,
+    overall,
+    confidence,
+    savings,
+    drivers: da.drivers,
+    actions: { fast: da.fast, proj: da.proj }
+  });
+  
+  // Show results card and scroll to it
+  const resultsCard = document.getElementById("resultsCard");
+  resultsCard.style.display = "block";
+  setTimeout(() => {
+    resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+// Hook up button
+document.getElementById("calcBtn").addEventListener("click", computeAndRender);
+</script>
+</body>
+</html>
